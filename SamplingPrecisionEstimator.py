@@ -27,17 +27,21 @@ class SamplingPrecisionEstimator(object):
 
         self.components_calculate_precision=components_calculate_precision
         self.component_coords={}# store the coordinates of each model acoording to the bead index.
-        # This dictionary is indexed by protein. The elements are lists of lists. 
+        # This dictionary is indexed by a protein domain. The elements are lists of lists. 
         # Each list corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
 
         '''Initialize bead precision and diameter dictionaries.'''
-        self.bead_precisions={} #dictionary with key as protein and bead precision for each primitive in the protein
-        self.bead_diameter={} #dictionary with key as protein and size of each primitive in the protein
+        self.bead_precisions={} #dictionary with key as protein domain and bead precision for each primitive in the protein domain
+        self.bead_diameter={} #dictionary with key as protein domain and size of each primitive in the protein domain
+
+        self.bead_imprecise={} # dictionary with key as protein domain and values as booleans that say which primitive is impreicsely sampled
 
         for protein_domain_key in components_calculate_precision:
             self.bead_precisions[protein_domain_key]=[]
             self.bead_diameter[protein_domain_key]=[]
+            self.bead_imprecise[protein_domain_key]=[]
             self.component_coords[protein_domain_key]=[]
+
 
         ''' Get the mapping of model index to sample number. '''
         self.get_models_by_sample(sample_id_file=os.path.join(gsm_directory,"model_sample_ids.txt"))
@@ -303,22 +307,29 @@ class SamplingPrecisionEstimator(object):
               
         
     def get_imprecise_beads(self,xscale):
-        ''' For each protein, get the list of bead indices for which the bead sizes were not commensurate with the sampling precision.
+        ''' For each bead check if its size is commensurate with the sampling precision.
+        If not, mark it as imprecise. 
         @param xscale used to define imprecise bead. imprecise bead has sampling_precision > xscale*bead_radius.
         '''
-        
-        imprecise_beads={}
-        
+
         for protein_domain_key in self.bead_diameter:
-            imprecise_beads[protein_domain_key]=[]
-            
             for bead_index in range(len(self.bead_diameter[protein_domain_key])):
                  if not self.is_commensurate(self.bead_diameter[protein_domain_key][bead_index],self.bead_precisions[protein_domain_key][bead_index],xscale):
-                     imprecise_beads[protein_domain_key].append(bead_index)
-                     #print protein_domain_key, bead_index+1,"%.2f\t%.2f" %(self.bead_precisions[protein_domain_key][bead_index],self.bead_diameter[protein_domain_key][bead_index])
+                     self.bead_imprecise[protein_domain_key].append(True)
+                 else:
+                     self.bead_imprecise[protein_domain_key].append(False)
 
-        return imprecise_beads
+    def print_bead_precisions(self,out_file_name):
+        ''' write bead index, bead precision and whether it is an imprecise bead to a file. '''
 
+        out_file=fopen("bead_precisions.dat",'w')
+    
+        for protein_domain_key in self.bead_precisions:
+            for bead_index in range(len(self.bead_precisions[protein_domain_key])):
+                print >>outfile,protein_domain_key,bead_index,"%.2f" %(self.bead_precisions[protein_domain_key][bead_index]),int(self.bead_imprecise[protein_domain_key][bead_index])
+
+        outfile.close()
+    
     def estimate_perbead_sampling_precision(self,grid_size=1.0):
         ''' For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
         Results are stored in the object's bead_precisions dictionary
