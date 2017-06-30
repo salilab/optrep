@@ -1,0 +1,2 @@
+A A_1 1 87 A.pdb A
+B B_1 1 87 B.pdb B
