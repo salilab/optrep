@@ -326,7 +326,7 @@ class SamplingPrecisionEstimator(object):
     
         for protein_domain_key in self.bead_precisions:
             for bead_index in range(len(self.bead_precisions[protein_domain_key])):
-                print >>outfile,protein_domain_key,bead_index,"%.2f" %(self.bead_precisions[protein_domain_key][bead_index]),int(self.bead_imprecise[protein_domain_key][bead_index])
+                print >>outfile,protein_domain_key[0],protein_domain_key[1],bead_index,"%.2f" %(self.bead_precisions[protein_domain_key][bead_index]),int(self.bead_imprecise[protein_domain_key][bead_index])
 
         outfile.close()
     

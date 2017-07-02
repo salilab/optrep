@@ -183,13 +183,13 @@ class BeadMapBuilder(object):
        
        return map_changed
 
-    def update_all_bead_maps(self,protein_domains_to_update,cg_bead_size):
+    def update_all_bead_maps(self,cg_bead_size):
         ''' Given a list of protein domains to update, update the representations of each of these to make the 
         maximum bead size cg_bead_size.'''
         
         updated=False
         
-        for protein_domain_key in protein_domains_to_update:
+        for protein_domain_key in self.imprecise_beads:
             current_map_updated = self.update_single_bead_map(protein_domain_key,cg_bead_size)
             
             if current_map_updated:
@@ -197,13 +197,19 @@ class BeadMapBuilder(object):
 
         return updated
     
-    def set_imprecise_beads(self,imprecise_bead_dict):
-        ''' Since we traverse the protein domain in order of bead index,the imprecise_bead_list is sorted by construction.        
+    def set_imprecise_beads_from_file(self,imprecise_beads_file):
+        ''' Will only have the beads for components that we want to update. 
         '''
     
-        for protein_domain_key in imprecise_bead_dict:
-            self.imprecise_beads[protein_domain_key]=imprecise_bead_dict[protein_domain_key]    
-  
+        ibf=open(imprecise_beads_file,'r')
+        for ln in ibf.readlines():
+            is_imprecise  = ln.strip().split()[4]
+            if not is_imprecise:
+                continue
+            protein_domain_key=(ln.strip().split()[0],ln.strip().split()[1])
+            self.imprecise_beads[protein_domain_key].append(ln.strip().split()[2])  
+        
+        ibf.close()
         
     def write_bead_map_to_file(self,output_file):
         ''' Write bead maps to file. Need to access this in the case of the next iteration of coarse-graining.
