@@ -26,7 +26,7 @@ class SamplingPrecisionEstimator(object):
         self.models_by_sample={1:[],2:[]}
 
         self.components_calculate_precision=components_calculate_precision
-        self.component_coords={}# store the coordinates of each model acoording to the bead index.
+        self.bead_coords={}# store the coordinates of each model acoording to the bead index.
         # This dictionary is indexed by a protein domain. The elements are lists of lists. 
         # Each list corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
 
@@ -40,7 +40,7 @@ class SamplingPrecisionEstimator(object):
             self.bead_precisions[protein_domain_key]=[]
             self.bead_diameter[protein_domain_key]=[]
             self.bead_imprecise[protein_domain_key]=[]
-            self.component_coords[protein_domain_key]=[]
+            self.bead_coords[protein_domain_key]=[]
 
 
         ''' Get the mapping of model index to sample number. '''
@@ -106,10 +106,10 @@ class SamplingPrecisionEstimator(object):
                         curr_dia=IMP.core.XYZR(a).get_radius()*2.0
 
                         if i==0: #first model, need to initialize the coordinate and radius lists for each bead index
-                            self.component_coords[protein_domain_key].append([curr_coords])
+                            self.bead_coords[protein_domain_key].append([curr_coords])
                             self.bead_diameter[protein_domain_key].append(curr_dia) # assuming it is same for all models. In future versions this could be different for each model
                         else:
-                            self.component_coords[protein_domain_key][bead_index].append(curr_coords)
+                            self.bead_coords[protein_domain_key][bead_index].append(curr_coords)
                 
                         # in any case increment bead index
                         bead_index += 1
@@ -128,9 +128,9 @@ class SamplingPrecisionEstimator(object):
 
         for i in range(self.total_num_models-1):
             for j in range(i+1,self.total_num_models):     
-                #dist=IMP.algebra.get_rmsd(IMP.algebra.Vector3Ds([self.component_coords[protein_domain_key][bead_index][i]]),IMP.algebra.Vector3Ds([self.component_coords[protein_domain_key][bead_index][j]]))
+                #dist=IMP.algebra.get_rmsd(IMP.algebra.Vector3Ds([self.bead_coords[protein_domain_key][bead_index][i]]),IMP.algebra.Vector3Ds([self.bead_coords[protein_domain_key][bead_index][j]]))
                 
-                dist=IMP.algebra.get_distance(self.component_coords[protein_domain_key][bead_index][i],self.component_coords[protein_domain_key][bead_index][j])
+                dist=IMP.algebra.get_distance(self.bead_coords[protein_domain_key][bead_index][i],self.bead_coords[protein_domain_key][bead_index][j])
                 distmat[i][j]=dist
 
                 if dist<mindist:
