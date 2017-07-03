@@ -17,26 +17,32 @@ IMPOPTREP_BEGIN_NAMESPACE
 
 SamplingPrecisionEstimator::SamplingPrecisionEstimator(std::string gsm_directory,std::vector<std::pair<std::string, std::string>> components_calculate_precision) {
         
-        models_dir_=gsm_directory;
-	components_calculate_precision_=components_calculate_precision;
+  models_dir_=gsm_directory;
+  components_calculate_precision_=components_calculate_precision;
 
-        // Initialize bead precision and diameter dictionaries.
-        self.bead_precisions={} #dictionary with key as protein domain and bead precision for each primitive in the protein domain
-        self.bead_diameter={} #dictionary with key as protein domain and size of each primitive in the protein domain
-
-        self.bead_imprecise={} # dictionary with key as protein domain and values as booleans that say which primitive is imprecisely sampled
-
-        for protein_domain_key in components_calculate_precision:
-            self.bead_precisions[protein_domain_key]=[]
-            self.bead_diameter[protein_domain_key]=[]
-            self.bead_imprecise[protein_domain_key]=[]
-            self.component_coords[protein_domain_key]=[]
-
-
-        // Get the mapping of model index to sample number. 
-        get_models_by_sample(sample_id_file=strcat(gsm_directory,"model_sample_ids.txt"));
+  // Get the mapping of model index to sample number. 
+  get_models_by_sample(strcat(gsm_directory,"model_sample_ids.txt"));
 
 }
+
+/* Get the mapping of model index to sample number. 
+*/
+SamplingPrecisionEstimator::get_models_by_sample(std::string sample_id_file) {
+
+  std::ifstream sifile;
+  sifile.open(sample_id_file.c_str());
+
+  int model_index, sample_number;
+
+  while (sifile >> model_index >> sample_number) {
+      models_by_sample_[sample_number-1].push_back(model_index);
+  } 
+                
+  total_number_of_models_ = models_by_sample_[0].size() + models_by_sample_[1].size();          
+  sifile.close();
+
+}
+
 
 /* dummy function
 */

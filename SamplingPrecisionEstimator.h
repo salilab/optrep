@@ -28,17 +28,37 @@ class IMPOPTREPEXPORT SamplingPrecisionEstimator {
     SamplingPrecisionEstimator(std::string gsm_directory,std::vector<std::pair<std::string, std::string> > components_calculate_precision);
 
  protected:
- unsigned int number_of_good_scoring_models;
+ unsigned int total_number_of_models;
 
- // model IDs for models in each sample
- std::vector<int> models_of_sample_1_;
- std::vector<int> models_of_sample_2_;
+ /* model IDs for models in each sample
+ */
+ std::vector<std::vector<int>> models_by_sample_;
 
  /*  Store the coordinates of each model according to the bead index.
-  This dictionary is indexed by a protein domain. The elements are lists of lists. 
-  Each list corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
+  Each vector corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
  */
-  std::vector<std::vector<IMP::algebra::Vector3D>>component_coords;  
+  std::vector<std::vector<IMP::algebra::Vector3D> >bead_coords_;  
+
+  /* Note the difference between the rest of the python-implemented classes (e.g. BeadMapBuilder) 
+ and the below: the implementation for each data structure here uses a global_bead_index  for the system (includes all proteins and domains) as opposed to the python classes which use a local_bead_index (index specific to a protein and domain). 
+
+  /* vector of precision values for each bead */ 
+  std::vector<Float > bead_precisions_;
+
+ /* vector of diameter values for each bead */
+ std::vector<Float > bead_diameter_;
+
+ /* vector showing which bead is imprecise and needs to be CG'ed */
+ std::vector<bool > bead_imprecise_;
+
+
+ // Methods
+ 
+ void get_models_by_sample(std::string sample_id_file);
+
+ 
+
+
    
   IMP_OBJECT_METHODS(SamplingPrecisionEstimator);
   IMP_SHOWABLE(SamplingPrecisionEstimator);
