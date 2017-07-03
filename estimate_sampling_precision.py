@@ -29,11 +29,12 @@ def estimate_sampling_precision():
      
     # process input
     args=parse_args()
-    
+    print arg.proteins_to_update
+
     ### list of (protein, domain) tuples corresponding to topology file
     ### could be changed to PMI selection later
     components_to_update=[]
-    for prot,dom in zip(arg.proteins_to_update,arg,domains_to_update):
+    for prot,dom in zip(arg.proteins_to_update,arg.domains_to_update):
         components_to_update.append((prot,dom))
         
     spe=IMP.optrep.SamplingPrecisionEstimator.SamplingPrecisionEstimator(os.path.join(arg.run_dir,"good_scoring_models"),components_to_update) # the components to calculate precision are the 
