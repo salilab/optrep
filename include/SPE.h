@@ -11,6 +11,7 @@
 #include <IMP.h>
 #include <IMP/atom.h>
 #include <IMP/core.h>
+#include "optrep_config.h"
 
 IMPOPTREP_BEGIN_NAMESPACE
 
