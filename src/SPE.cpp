@@ -16,19 +16,19 @@
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-SPE::SPE(std::string gsm_directory,std::vector<std::pair<std::string, std::string>> components_calculate_precision) {
+SPE::SPE(std::string gsm_directory,std::vector<std::pair<std::string, std::string > > components_calculate_precision) {
         
   models_dir_=gsm_directory;
   components_calculate_precision_=components_calculate_precision;
 
   // Get the mapping of model index to sample number. 
-  get_models_by_sample(strcat(gsm_directory,"model_sample_ids.txt"));
+  get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 
 }
 
 /* Get the mapping of model index to sample number. 
 */
-SPE::get_models_by_sample(std::string sample_id_file) {
+void SPE::get_models_by_sample(std::string sample_id_file) {
 
   std::ifstream sifile;
   sifile.open(sample_id_file.c_str());
@@ -42,13 +42,6 @@ SPE::get_models_by_sample(std::string sample_id_file) {
   total_number_of_models_ = models_by_sample_[0].size() + models_by_sample_[1].size();          
   sifile.close();
 
-}
-
-
-/* dummy function
-*/
-void SPE::show(std::ostream &out) const {
-  out << "sampling precision estimator\n";
 }
 
 IMPOPTREP_END_NAMESPACE

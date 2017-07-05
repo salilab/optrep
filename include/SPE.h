@@ -29,6 +29,12 @@ class IMPOPTREPEXPORT SPE {
     SPE(std::string gsm_directory,std::vector<std::pair<std::string, std::string> > components_calculate_precision);
 
  protected:
+    /* directory where model RMFs and the model sample IDs are stored. */
+    std::string models_dir_;
+
+    /* list of <protein,domain> names for which representation needs to be optimized*/
+    std::vector<std::pair<std::string, std::string > > components_calculate_precision;
+
  unsigned int total_number_of_models;
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
@@ -58,7 +64,7 @@ class IMPOPTREPEXPORT SPE {
  
  void get_models_by_sample(std::string sample_id_file);
 
-  IMP_OBJECT_METHODS(SPE);
+  //IMP_OBJECT_METHODS(SPE);
 
 
 };
