@@ -322,13 +322,13 @@ class SamplingPrecisionEstimator(object):
     def print_bead_precisions(self,out_file_name):
         ''' write bead index, bead precision and whether it is an imprecise bead to a file. '''
 
-        out_file=fopen("bead_precisions.dat",'w')
+        out_file=open(out_file_name,'w')
     
         for protein_domain_key in self.bead_precisions:
             for bead_index in range(len(self.bead_precisions[protein_domain_key])):
-                print >>outfile,protein_domain_key[0],protein_domain_key[1],bead_index,"%.2f" %(self.bead_precisions[protein_domain_key][bead_index]),int(self.bead_imprecise[protein_domain_key][bead_index])
+                print >>out_file,protein_domain_key[0],protein_domain_key[1],bead_index,"%.2f" %(self.bead_precisions[protein_domain_key][bead_index]),int(self.bead_imprecise[protein_domain_key][bead_index])
 
-        outfile.close()
+        out_file.close()
     
     def estimate_perbead_sampling_precision(self,grid_size=1.0):
         ''' For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.

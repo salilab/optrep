@@ -15,9 +15,7 @@ spe.load_coordinates_and_bead_sizes_from_model_files()
 
 spe.estimate_perbead_sampling_precision(grid_size=2.0)
 
-imprecise_beads=spe.get_imprecise_beads(xscale=1.0)
+spe.get_imprecise_beads(xscale=1.0)
 
-# make this faster 
-print imprecise_beads
-
+spe.print_bead_precisions("bead_precisions_python.dat")
 
