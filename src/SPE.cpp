@@ -1,5 +1,5 @@
 /**
- *  \file SamplingPrecisionEstimator.cpp
+ *  \file SPE.cpp
  *  \brief Estimate particle-wise precision in order to coarse-grain beads
  *
  *  Copyright 2007-2017 IMP Inventors. All rights reserved.
@@ -12,10 +12,11 @@
 #include <iostream>
 #include <string>
 #include <IMP/rmf.h>
+#include <IMP/optrep/SPE.h>
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-SamplingPrecisionEstimator::SamplingPrecisionEstimator(std::string gsm_directory,std::vector<std::pair<std::string, std::string>> components_calculate_precision) {
+SPE::SPE(std::string gsm_directory,std::vector<std::pair<std::string, std::string>> components_calculate_precision) {
         
   models_dir_=gsm_directory;
   components_calculate_precision_=components_calculate_precision;
@@ -27,7 +28,7 @@ SamplingPrecisionEstimator::SamplingPrecisionEstimator(std::string gsm_directory
 
 /* Get the mapping of model index to sample number. 
 */
-SamplingPrecisionEstimator::get_models_by_sample(std::string sample_id_file) {
+SPE::get_models_by_sample(std::string sample_id_file) {
 
   std::ifstream sifile;
   sifile.open(sample_id_file.c_str());
@@ -46,7 +47,7 @@ SamplingPrecisionEstimator::get_models_by_sample(std::string sample_id_file) {
 
 /* dummy function
 */
-void SamplingPrecisionEstimator::show(std::ostream &out) const {
+void SPE::show(std::ostream &out) const {
   out << "sampling precision estimator\n";
 }
 
