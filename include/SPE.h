@@ -39,7 +39,7 @@ class IMPOPTREPEXPORT SPE {
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
  */
- std::vector<int> models_by_sample_[2];
+ Ints models_by_sample_[2];
 
  /*  Store the coordinates of each model according to the bead index.
   Each vector corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
@@ -51,10 +51,10 @@ class IMPOPTREPEXPORT SPE {
   */
 
   /* vector of precision values for each bead */ 
-  std::vector<Float > bead_precisions_;
+ Floats bead_precisions_;
 
  /* vector of diameter values for each bead */
- std::vector<Float > bead_diameter_;
+ Floats bead_diameter_;
 
  /* vector showing which bead is imprecise and needs to be CG'ed */
  std::vector<bool > bead_imprecise_;
