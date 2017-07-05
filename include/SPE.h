@@ -58,15 +58,10 @@ class IMPOPTREPEXPORT SPE {
  
  void get_models_by_sample(std::string sample_id_file);
 
- 
-
-
-   
   IMP_OBJECT_METHODS(SPE);
-  IMP_SHOWABLE(SPE);
 
 
-}
+};
 
 IMPOPTREP_END_NAMESPACE
 
