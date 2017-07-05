@@ -33,9 +33,9 @@ class IMPOPTREPEXPORT SPE {
     std::string models_dir_;
 
     /* list of <protein,domain> names for which representation needs to be optimized*/
-    std::vector<std::pair<std::string, std::string > > components_calculate_precision;
+    std::vector<std::pair<std::string, std::string > > components_calculate_precision_;
 
- unsigned int total_number_of_models;
+ unsigned int total_number_of_models_;
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
  */
