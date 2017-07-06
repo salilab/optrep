@@ -1,0 +1,10 @@
+//IMP_SWIG_OBJECT(IMP::example, ExampleRestraint, ExampleRestraints);
+//IMP_SWIG_DECORATOR(IMP::example, ExampleDecorator, ExampleDecorators);
+//IMP_SWIG_VALUE_TEMPLATE(IMP::example, ExampleTemplateClassD)
+%import "RMF.i"
+%{
+#include "RMF.h"
+%}
+
+%include "IMP/optrep/SPE.h"
+

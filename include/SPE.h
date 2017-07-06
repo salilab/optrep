@@ -1,3 +1,4 @@
+
 /**
  *  \file SPE.h
  *  \brief Get per-bead sampling precision
@@ -26,14 +27,14 @@ class IMPOPTREPEXPORT SPE {
      	\param[in] components_calculate_precision is a list of (protein,domain) elements whose precision needs to be calculated (i.e. whose representation needs to be improved).
   */
 
-    SPE(std::string gsm_directory,std::vector<std::pair<std::string, std::string> > components_calculate_precision);
+    SPE(String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
 
  protected:
     /* directory where model RMFs and the model sample IDs are stored. */
-    std::string models_dir_;
+    String models_dir_;
 
     /* list of <protein,domain> names for which representation needs to be optimized*/
-    std::vector<std::pair<std::string, std::string > > components_calculate_precision_;
+    std::vector<std::pair<String, String > > components_calculate_precision_;
 
  unsigned int total_number_of_models_;
 
