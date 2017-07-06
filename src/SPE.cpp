@@ -30,31 +30,39 @@ SPE::SPE(String gsm_directory,std::vector<std::pair<String, String > > component
 */
 void SPE::get_models_by_sample(String sample_id_file) {
 
-  std::ifstream sifile;
-  sifile.open(sample_id_file.c_str());
+    std::ifstream sifile;
+    sifile.open(sample_id_file.c_str());
 
-  int model_index, sample_number;
+    int model_index, sample_number;
 
-  while (sifile >> model_index >> sample_number) {
-      models_by_sample_[sample_number-1].push_back(model_index);
-  } 
+    while (sifile >> model_index >> sample_number) {
+        models_by_sample_[sample_number-1].push_back(model_index);
+    } 
                 
-  total_number_of_models_ = models_by_sample_[0].size() + models_by_sample_[1].size();          
-  sifile.close();
+    total_number_of_models_ = models_by_sample_[0].size() + models_by_sample_[1].size();
+    sifile.close();
 
 }
 
-// String _included_protein_domain(String chain_full_name,protein_domain_list):
-//         ''' Check if the current chain should be included for calculating bead precisions, based on the list of protein domains mentioned. 
-//         '''
-//         for protein_domain in protein_domain_list:
-//             
-//             protein=protein_domain[0]
-//             if protein in chain_full_name:
-//                 return protein_domain
-// 
-//         return False
-// 
+/* Check if the current chain should be included for calculating bead precisions, 
+   based on the list of protein domains mentioned. 
+*/
+unsigned int _included_protein_domain(String chain_full_name) {
+        
+    for(unsigned int i=0;i<components_calculate_precision_.size();i++) {
+        
+        protein=components_calculate_precision_[i][0];
+        
+        std::size_t found=chain_full_name.find(protein);
+        if (found != String::npos)
+            return(i);
+        
+    }
+
+    return(-1);
+
+}
+
 //     def load_coordinates_and_bead_sizes_from_model_files(self):
 //         ''' Load all the coordinates from all good scoring models.
 //         Store them by bead type so that it is easy to calculate RMSD/precision.

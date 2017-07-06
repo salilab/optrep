@@ -63,7 +63,11 @@ class IMPOPTREPEXPORT SPE {
 
  // Methods
  
- void get_models_by_sample(std::string sample_id_file);
+ void get_models_by_sample(String sample_id_file);
+ 
+ unsigned int _included_protein_domain(String chain_full_name);
+ 
+ 
 
   //IMP_OBJECT_METHODS(SPE);
 

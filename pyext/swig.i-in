@@ -6,5 +6,8 @@
 #include "RMF.h"
 %}
 
+%template() std::pair<std::string,std::string>;
+%template(ProteinDomainList) std::vector<std::pair<std::string,std::string> >;
+
 %include "IMP/optrep/SPE.h"
 
