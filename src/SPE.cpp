@@ -32,29 +32,32 @@ get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 void SPE::order_components_by_topology_file(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file) {
 
 
-	std::ifstream tfile(topology_file.c_str());
+	std::ifstream tfile;
+	tfile.open(topology_file.c_str());
 	
 	//just need the first two fields
-	std::string line, prot, dom;
+	String line, prot, dom;
 
 	while (std::getline(tfile,line)) {
-		std::istringstream ss;
+		std::istringstream ss(line);
 		ss >> prot;
 		ss >> dom; 
 
-		std::pair<String, String> protein_domain(prot,dom);
+		std::pair<String,String > protein_domain = {prot,dom};
 
 		for(unsigned int i=0;i<components_calculate_precision.size();i++){
 
-			if (protein_domain == components_calculate_precision[i])				
-				components_calculate_precision_.push_back(protein_domain); 
+			if (protein_domain == components_calculate_precision[i])								components_calculate_precision_.push_back(protein_domain); 
+			std::cout <<  protein_domain.first << " " << protein_domain.second <<std::endl;
+			std::cout <<components_calculate_precision[i].first <<" " << components_calculate_precision[i].second << std::endl; 
+
 		}
         } 
 	
-	tfile.close()
+	tfile.close();
 
 	if(components_calculate_precision.size()!=components_calculate_precision_.size())
-		std::cout<< "some components were not defined in the topology file!"
+		std::cout<< "some components were not defined in the topology file!" <<std::endl; 
 
 	number_of_protein_domains_ = components_calculate_precision_.size();
 
@@ -95,7 +98,7 @@ int SPE::included_protein_domain_(String chain_full_name) {
     return(-1);
 }
 
-void spe::load_coordinates_and_bead_sizes_from_model_files() {
+void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 /* Load all the coordinates from all good scoring models.
         Store them by bead type so that it is easy to calculate RMSD/precision.
         TODO does not do alignment yet
@@ -109,11 +112,11 @@ void spe::load_coordinates_and_bead_sizes_from_model_files() {
     Assuming same hierarchy for all models of a given sampling run. */
     IMP_NEW(Model, m, ());
     
-    String mdl_0 = models_dir + std::to_str(0) + ".rmf3";
+    String mdl_0 = models_dir_ + std::to_string(0) + ".rmf3";
     
-    RMF::FileConstHandle fh_0=RMF.open_rmf_file_read_only(mdl_0);
+    RMF::FileConstHandle fh_0=RMF::open_rmf_file_read_only(mdl_0);
     
-    IMP::atom::Hierarchies hier_0=IMP.rmf.create_hierarchies(fh_0,m); 
+    IMP::atom::Hierarchies hier_0=rmf::create_hierarchies(fh_0,m); 
     
     fh_0 = RMF::FileHandle();
     
@@ -121,15 +124,15 @@ void spe::load_coordinates_and_bead_sizes_from_model_files() {
     for (unsigned int i=0;i<total_number_of_models_;i++) { 
     /* the models in the good_scoring_model dir are called 0.rmf3, 1.rmf3 and so on.. */
                 
-        String mdl_i = models_dir + std::to_str(i) + ".rmf3";
+        String mdl_i = models_dir_ + std::to_string(i) + ".rmf3";
         
-        RMF::FileConstHandle fh_i=RMF.open_rmf_file_read_only(mdl_i);
+        RMF::FileConstHandle fh_i=RMF::open_rmf_file_read_only(mdl_i);
     
         rmf::link_hierarchies(fh_i,hier_0);   
 
-        rmf::load_frame(fh_i, 0);          
+        rmf::load_frame(fh_i, RMF::FrameID(0));          
 
-	global_bead_index=0; 
+	long global_bead_index=0; 
 
 	/* same for all models: list of (protein/domain,bead)indices for components to calculate precision.
 	Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
@@ -146,7 +149,7 @@ void spe::load_coordinates_and_bead_sizes_from_model_files() {
 
                 for (unsigned int ci = 0; ci<chains_i.size();ci++) {
                     
-                    protein_domain_index = included_protein_domain_(chains_i[ci]->get_name());
+                    int protein_domain_index = included_protein_domain_(chains_i[ci]->get_name());
                     
                     if (protein_domain_index == -1) 
                         continue;

@@ -27,7 +27,7 @@ class IMPOPTREPEXPORT SPE {
     \param[in] components_calculate_precision is a list of (protein,domain) elements whose precision needs to be calculated (i.e. whose representation needs to be improved).
   */
 
- SPE(String topology file, String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
+ SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
 
  protected:
 /* directory where model RMFs and the model sample IDs are stored. */
@@ -70,7 +70,8 @@ void order_components_by_topology_file(std::vector<std::pair<String, String > > 
  void get_models_by_sample(String sample_id_file);
 
  int included_protein_domain_(String chain_full_name);
- 
+
+void load_coordinates_and_bead_sizes_from_model_files(); 
   //IMP_OBJECT_METHODS(SPE);
 
 
