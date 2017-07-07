@@ -13,9 +13,9 @@ spe=IMP.optrep.SamplingPrecisionEstimator.SamplingPrecisionEstimator("input/1SYX
 
 spe.load_coordinates_and_bead_sizes_from_model_files()
 
-spe.estimate_perbead_sampling_precision(grid_size=2.0)
+#spe.estimate_perbead_sampling_precision(grid_size=2.0)
 
-spe.get_imprecise_beads(xscale=1.0)
+#spe.get_imprecise_beads(xscale=1.0)
 
-spe.print_bead_precisions("bead_precisions_python.dat")
+#spe.print_bead_precisions("bead_precisions_python.dat")
 

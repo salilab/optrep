@@ -20,29 +20,45 @@ SPE::SPE(String topology_file, String gsm_directory,std::vector<std::pair<String
         
 models_dir_=gsm_directory;
 
-components_calculate_precision_=components_calculate_precision;
-// for now, assume that it is ordered by topology file. 
+//components_calculate_precision_=components_calculate_precision;
 
-// order_components_by_topology_file(components_calculate_precision, topology_file);
+order_components_by_topology_file(components_calculate_precision, topology_file);
 
 // Get the mapping of model index to sample number. 
 get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 
 }
 
-/*
 void order_components_by_topology_file(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file) {
 
-goover topo file.
-if protein,domain in components calculate precision, add it to the new components in order. 
 
-components_calculate_precision_=xx;
+	std::ifstream tfile(topology_file.c_str());
+	
+	//just need the first two fields
+	std::string line, prot, dom;
 
-number_of_protein_domains_ = components_calculate_precision_.size();
+	while (std::getline(tfile,line)) {
+		std::istringstream ss;
+		ss >> prot;
+		ss >> dom; 
 
+		std::pair<String, String> protein_domain(prot,dom);
+
+		for(unsigned int i=0;i<components_calculate_precision.size();i++){
+
+			if (protein_domain == components_calculate_precision[i])				
+				components_calculate_precision_.push_back(protein_domain); 
+		}
+        } 
+	
+	tfile.close()
+
+	if(components_calculate_precision.size()!=components_calculate_precision_.size())
+		std::cout<< "some components were not defined in the topology file!"
+
+	number_of_protein_domains_ = components_calculate_precision_.size();
 
 }
-*/
 
 /* Get the mapping of model index to sample number. 
 */
