@@ -24,48 +24,58 @@ class IMPOPTREPEXPORT SPE {
  public:
  /**
 	\param[in] gsm_directory the directory containing good-scoring models. Should also contain the sample id file, the file containing the sample identity (1 or 2) for each good-scoring model RMF (model_sample_ids.txt)
-     	\param[in] components_calculate_precision is a list of (protein,domain) elements whose precision needs to be calculated (i.e. whose representation needs to be improved).
+    \param[in] components_calculate_precision is a list of (protein,domain) elements whose precision needs to be calculated (i.e. whose representation needs to be improved).
   */
 
-    SPE(String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
+ SPE(String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
 
+
+ 
  protected:
-    /* directory where model RMFs and the model sample IDs are stored. */
-    String models_dir_;
+/* directory where model RMFs and the model sample IDs are stored. */
+String models_dir_;
 
-    /* list of <protein,domain> names for which representation needs to be optimized*/
-    std::vector<std::pair<String, String > > components_calculate_precision_;
+/* list of <protein,domain> names for which representation needs to be optimized*/
+std::vector<std::pair<String, String > > components_calculate_precision_;
 
- unsigned int total_number_of_models_;
+ std::size_t total_number_of_models_;
+ 
+ std::size_t number_of_protein_domains_;
+ 
+ std::vector<std::size_t > beads_per_protein_domain_;
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
  */
  Ints models_by_sample_[2];
 
- /*  Store the coordinates of each model according to the bead index.
-  Each vector corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
+ /*  Store the coordinates of each model according to the global bead index (protein_domain_index * bead index).
+  Each vector corresponds to a bead and is the list of all coordinates of good-scoring model coordinates corresponding to that bead.
  */
-  std::vector<std::vector<IMP::algebra::Vector3D> >bead_coords_;  
+  std::vector<std::vector<IMP::algebra::Vector3D> > bead_coords_;  
+  
+  protein domain key
+  bead id
+  number of models 
 
   /* Note the difference between the rest of the python-implemented classes (e.g. BeadMapBuilder) 
  and the below: the implementation for each data structure here uses a global_bead_index  for the system (includes all proteins and domains) as opposed to the python classes which use a local_bead_index (index specific to a protein and domain). 
   */
 
   /* vector of precision values for each bead */ 
- Floats bead_precisions_;
+ Floats bead_precisions_();
 
  /* vector of diameter values for each bead */
- Floats bead_diameter_;
+ Floats bead_diameter_();
 
  /* vector showing which bead is imprecise and needs to be CG'ed */
- std::vector<bool > bead_imprecise_;
+ std::vector<bool > bead_imprecise_();
 
 
  // Methods
  
  void get_models_by_sample(String sample_id_file);
- 
- unsigned int _included_protein_domain(String chain_full_name);
+
+ int included_protein_domain_(String chain_full_name);
  
  
 

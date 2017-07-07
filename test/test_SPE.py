@@ -13,13 +13,10 @@ components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
 
 spe=IMP.optrep.SPE("input/1SYX/good_scoring_models/",components_to_update)
 
-a=spe._included_protein_domain("Chain_B_full")
-
-print a
-
-b=spe._included_protein_domain("Chain_A_full")
-
-print b
+questions: 
+    - should I run with the constructor? by knowing the size before hand? or precomuting them here? 
+    - what is the use?? 
+    - fix the load coordinates code when the ds of bead coords is known. 
 
 #spe.load_coordinates_and_bead_sizes_from_model_files()
 
