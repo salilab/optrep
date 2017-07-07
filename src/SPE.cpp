@@ -29,7 +29,7 @@ get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 
 }
 
-void order_components_by_topology_file(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file) {
+void SPE::order_components_by_topology_file(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file) {
 
 
 	std::ifstream tfile(topology_file.c_str());

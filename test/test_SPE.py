@@ -11,7 +11,7 @@ import IMP.optrep
 components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")]) 
 # outer () is for argument, [] is for vector, inner () is for string pair.
 
-spe=IMP.optrep.SPE("input/1SYX/good_scoring_models/",components_to_update)
+spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
 
 #spe.load_coordinates_and_bead_sizes_from_model_files()
 
