@@ -48,27 +48,22 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
  */
  Ints models_by_sample_[2];
 
- /*  Store the coordinates of each model according to the global bead index (protein_domain_index * bead index).
+ /*  Store the coordinates of each model according to the global bead index (protein_domain_index , bead_index for protein domain).
   Each vector corresponds to a bead and is the list of all coordinates of good-scoring model coordinates corresponding to that bead.
  */
   std::vector<std::vector<IMP::algebra::Vector3D> > bead_coords_;  
   
-  protein domain key
-  bead id
-  number of models 
-
-  /* Note the difference between the rest of the python-implemented classes (e.g. BeadMapBuilder) 
- and the below: the implementation for each data structure here uses a global_bead_index  for the system (includes all proteins and domains) as opposed to the python classes which use a local_bead_index (index specific to a protein and domain). 
+   /* Note the difference between the rest of the python-implemented classes (e.g. BeadMapBuilder) and the below: the implementation for each data structure here uses a global_bead_index  for the system (protein_domain_index , bead_index for protein domain) as opposed to the python classes which use a local_bead_index (index specific to a protein and domain). 
   */
 
   /* vector of precision values for each bead */ 
- Floats bead_precisions_();
+ Floats bead_precisions_;
 
  /* vector of diameter values for each bead */
- Floats bead_diameter_();
+ Floats bead_diameter_;
 
  /* vector showing which bead is imprecise and needs to be CG'ed */
- std::vector<bool > bead_imprecise_();
+ std::vector<bool > bead_imprecise_;
 
 
  // Methods
@@ -77,8 +72,6 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
 
  int included_protein_domain_(String chain_full_name);
  
- 
-
   //IMP_OBJECT_METHODS(SPE);
 
 
