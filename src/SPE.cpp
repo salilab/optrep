@@ -48,9 +48,6 @@ void SPE::order_components_by_topology_file(std::vector<std::pair<String, String
 		for(unsigned int i=0;i<components_calculate_precision.size();i++){
 
 			if (protein_domain == components_calculate_precision[i])								components_calculate_precision_.push_back(protein_domain); 
-			std::cout <<  protein_domain.first << " " << protein_domain.second <<std::endl;
-			std::cout <<components_calculate_precision[i].first <<" " << components_calculate_precision[i].second << std::endl; 
-
 		}
         } 
 	
@@ -150,7 +147,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
                 for (unsigned int ci = 0; ci<chains_i.size();ci++) {
                     
                     int protein_domain_index = included_protein_domain_(chains_i[ci]->get_name());
-                    
+                
                     if (protein_domain_index == -1) 
                         continue;
 		                   
@@ -161,7 +158,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
                         
 			if(i==0) {
 				//create new coords list
-				bead_coords_.push_back(std::vector<IMP::algebra::Vector3D>(total_number_of_models_));
+				bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
 				beads_per_protein_domain_[protein_domain_index]+=1;
 		
 				// assume same bead sizes for all models
@@ -169,7 +166,9 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
                             	bead_diameter_.push_back(curr_dia);
 			}		
 			
-			bead_coords_[global_bead_index].push_back(curr_coords); 
+			bead_coords_[global_bead_index].push_back(curr_coords);	
+
+			std::cout<<global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
 
 			global_bead_index++; // we can do this because components to calculate precision are in order of the topology file
 
@@ -179,8 +178,13 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         } // end for state
 
+	for(unsigned int j=0;j<beads_per_protein_domain_[0];j++) {
+		std::cout << bead_diameter_[j] << std::endl; 
+		std::cout << bead_coords_[j][i]<< std::endl;
+	}
+
 	}// end for each model
-        
+        	
 } 
 
 

@@ -29,6 +29,7 @@ class IMPOPTREPEXPORT SPE {
 
  SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
 
+void load_coordinates_and_bead_sizes_from_model_files(); 
  protected:
 /* directory where model RMFs and the model sample IDs are stored. */
 String models_dir_;
@@ -71,7 +72,6 @@ void order_components_by_topology_file(std::vector<std::pair<String, String > > 
 
  int included_protein_domain_(String chain_full_name);
 
-void load_coordinates_and_bead_sizes_from_model_files(); 
   //IMP_OBJECT_METHODS(SPE);
 
 
