@@ -47,7 +47,8 @@ void SPE::order_components_by_topology_file(std::vector<std::pair<String, String
 
 		for(unsigned int i=0;i<components_calculate_precision.size();i++){
 
-			if (protein_domain == components_calculate_precision[i])								components_calculate_precision_.push_back(protein_domain); 
+			if (protein_domain == components_calculate_precision[i])	
+                components_calculate_precision_.push_back(protein_domain); 
 		}
         } 
 	
@@ -96,7 +97,7 @@ int SPE::included_protein_domain_(String chain_full_name) {
 }
 
 void SPE::load_coordinates_and_bead_sizes_from_model_files() {
-/* Load all the coordinates from all good scoring models.
+   /* Load all the coordinates from all good scoring models.
         Store them by bead type so that it is easy to calculate RMSD/precision.
         TODO does not do alignment yet
         TODO does not handle multiscale properly yet? 
@@ -104,7 +105,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
         TODO Take care of multi-state protein.
         TODO  There may be memory problem for large assemblies and large number of models. Need to refactor. 
         TODO Make the code faster by integrating with the GPU based RMSD calculator code.
-*/
+    */
     /* first create hierarchies from the first frame, so that it is faster to link/load frames.
     Assuming same hierarchy for all models of a given sampling run. */
     IMP_NEW(Model, m, ());
@@ -129,48 +130,49 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         rmf::load_frame(fh_i, RMF::FrameID(0));          
 
-	long global_bead_index=0; 
+	    long global_bead_index=0; 
 
-	/* same for all models: list of (protein/domain,bead)indices for components to calculate precision.
-	Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
-	*/ 
+        /* same for all models: list of (protein/domain,bead) indices for components to calculate precision.
+        Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
+        */ 
 
         // need only from the first hierarchy 
         IMP::atom::Hierarchies states_i = hier_0[0].get_children(); 
         for (unsigned int si = 0; si<states_i.size();si++) {
             IMP::atom::Hierarchies chains_i = states_i[si].get_children();
 
-		if (i==0) {
-		    beads_per_protein_domain_.push_back(0);
-		}
-
-                for (unsigned int ci = 0; ci<chains_i.size();ci++) {
+            for (unsigned int ci = 0; ci<chains_i.size();ci++) {
                     
                     int protein_domain_index = included_protein_domain_(chains_i[ci]->get_name());
                 
                     if (protein_domain_index == -1) 
                         continue;
+                    
+                    if (i==0) {
+                        beads_per_protein_domain_.push_back(0);
+                    }
 		                   
                     IMP::atom::Hierarchies beads_i = IMP::atom::get_leaves(chains_i[ci]);
                     for (unsigned int bi = 0; bi<beads_i.size();bi++) { 
                         
                         IMP::algebra::Vector3D curr_coords = IMP::core::XYZR(beads_i[bi]).get_coordinates();
                         
-			if(i==0) {
-				//create new coords list
-				bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
-				beads_per_protein_domain_[protein_domain_index]+=1;
-		
-				// assume same bead sizes for all models
-				Float curr_dia=IMP::core::XYZR(beads_i[bi]).get_radius()*2.0;
-                            	bead_diameter_.push_back(curr_dia);
-			}		
+                        if(i==0) {
+                            //create new coords list
+                            bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
+                            
+                            beads_per_protein_domain_[beads_per_protein_domain_.size()-1]+=1;
+                    
+                            // assume same bead sizes for all models
+                            Float curr_dia=IMP::core::XYZR(beads_i[bi]).get_radius()*2.0;
+                            bead_diameter_.push_back(curr_dia);
+                        }	
 			
-			bead_coords_[global_bead_index].push_back(curr_coords);	
+                        bead_coords_[global_bead_index].push_back(curr_coords);	
 
-			std::cout<<global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
+                        std::cout << global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
 
-			global_bead_index++; // we can do this because components to calculate precision are in order of the topology file
+                        global_bead_index++; // we can do this because components to calculate precision are in order of the topology file
 
                     } //end for beads in protein domain     
 			                
