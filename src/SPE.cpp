@@ -14,6 +14,7 @@
 #include <IMP/rmf.h>
 #include <IMP/optrep/SPE.h>
 
+
 IMPOPTREP_BEGIN_NAMESPACE
 
 SPE::SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String > > components_calculate_precision) {
@@ -29,7 +30,7 @@ get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 
 }
 
-void SPE::order_components_by_topology_file(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file) {
+void SPE::order_components_by_topology_file_(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file) {
 
 
 	std::ifstream tfile;
@@ -63,7 +64,7 @@ void SPE::order_components_by_topology_file(std::vector<std::pair<String, String
 
 /* Get the mapping of model index to sample number. 
 */
-void SPE::get_models_by_sample(String sample_id_file) {
+void SPE::get_models_by_sample_(String sample_id_file) {
 
     std::ifstream sifile;
     sifile.open(sample_id_file.c_str());
@@ -161,8 +162,8 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
                             //create new coords list
                             bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
                             
-                            beads_per_protein_domain_[beads_per_protein_domain_.size()-1]+=1;
-                    
+                            beads_per_protein_domain_.back()+=1;
+                                                
                             // assume same bead sizes for all models
                             Float curr_dia=IMP::core::XYZR(beads_i[bi]).get_radius()*2.0;
                             bead_diameter_.push_back(curr_dia);
@@ -170,7 +171,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 			
                         bead_coords_[global_bead_index].push_back(curr_coords);	
 
-                        std::cout << global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
+                        // std::cout << global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
 
                         global_bead_index++; // we can do this because components to calculate precision are in order of the topology file
 
@@ -180,14 +181,46 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         } // end for state
 
-	for(unsigned int j=0;j<beads_per_protein_domain_[0];j++) {
-		std::cout << bead_diameter_[j] << std::endl; 
-		std::cout << bead_coords_[j][i]<< std::endl;
-	}
-
-	}// end for each model
+ 	}// end for each model
+	
+	
+	//std::cout << beads_per_protein_domain_.size() <<" " <<   beads_per_protein_domain_[0] <<  " " <<  beads_per_protein_domain_[1] << std::endl; 
         	
 } 
+
+IMP::optrep::DistanceMatrix SPE::get_all_vs_all_distances(unsigned int global_bead_index) {
+        /* Return the distance matrix, minimum and maximum distance per bead.
+        */
+        IMP::optrep::DistanceMatrix d(total_number_of_models_);
+
+        Float mindist=std::numeric_limits<double>::max();
+        Float maxdist=0.0;
+
+        for (unsigned int i = 0;i<total_number_of_models_-1;i++) {
+                
+            for (unsigned int j = i+1;j<total_number_of_models_;j++) {     
+               
+                Float dist=IMP::algebra::get_distance(bead_coords_[global_bead_index][i],bead_coords_[global_bead_index][j]);
+                d.distmat.push_back(dist);
+
+                if (dist<mindist) {
+                    mindist=dist;
+                }
+
+                if (dist>maxdist) {
+                    maxdist=dist;
+                }
+            }
+        }
+
+         d.mindist = mindist;
+         d.maxdist = maxdist;
+                    
+        return d;
+
+}
+
+
 
 
 

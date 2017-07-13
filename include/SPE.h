@@ -30,7 +30,11 @@ class IMPOPTREPEXPORT SPE {
  SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
 
 void load_coordinates_and_bead_sizes_from_model_files(); 
- protected:
+
+//TODO make protected after testing
+IMP::optrep::DistanceMatrix get_all_vs_all_distances(unsigned int global_bead_index);
+
+protected:
 /* directory where model RMFs and the model sample IDs are stored. */
 String models_dir_;
 
@@ -41,7 +45,7 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
  
  std::size_t number_of_protein_domains_;
  
- std::vector<std::size_t > beads_per_protein_domain_;
+ std::vector<unsigned int> beads_per_protein_domain_;
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
  */
@@ -55,24 +59,23 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
    /* Note the difference between the rest of the python-implemented classes (e.g. BeadMapBuilder) and the below: the implementation for each data structure here uses a global_bead_index  for the system (protein_domain_index , bead_index for protein domain) as opposed to the python classes which use a local_bead_index (index specific to a protein and domain). 
   */
 
+ /* vector of diameter values for each bead */
+ Floats bead_diameter_;
+ 
   /* vector of precision values for each bead */ 
  Floats bead_precisions_;
 
- /* vector of diameter values for each bead */
- Floats bead_diameter_;
-
  /* vector showing which bead is imprecise and needs to be CG'ed */
  std::vector<bool > bead_imprecise_;
-
-
+ 
  // Methods
-void order_components_by_topology_file(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file);
+void order_components_by_topology_file_(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file);
 
- void get_models_by_sample(String sample_id_file);
+void get_models_by_sample_(String sample_id_file);
 
- int included_protein_domain_(String chain_full_name);
+int included_protein_domain_(String chain_full_name);
 
-  //IMP_OBJECT_METHODS(SPE);
+//IMP_OBJECT_METHODS(SPE);
 
 
 };

@@ -8,12 +8,19 @@ import IMP.pmi.topology
 import os,sys,string,math
 import IMP.optrep
 
-components_to_update=IMP.optrep.ProteinDomainList([("B","B_1"),("A","A_1")]) 
+#components_to_update=IMP.optrep.ProteinDomainList([("B","B_1"),("A","A_1")]) 
+
+components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
+
 # outer () is for argument, [] is for vector, inner () is for string pair.
 
 spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
 
 spe.load_coordinates_and_bead_sizes_from_model_files()
+
+distanceMatrix= spe.get_all_vs_all_distances(0)
+
+
 
 #spe.estimate_perbead_sampling_precision(grid_size=2.0)
 
