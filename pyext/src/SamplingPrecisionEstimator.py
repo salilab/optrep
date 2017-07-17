@@ -132,6 +132,8 @@ class SamplingPrecisionEstimator(object):
                 
                 dist=IMP.algebra.get_distance(self.bead_coords[protein_domain_key][bead_index][i],self.bead_coords[protein_domain_key][bead_index][j])
                 distmat[i][j]=dist
+                
+                #print dist
 
                 if dist<mindist:
                     mindist=dist

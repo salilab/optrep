@@ -22,7 +22,7 @@ class IMPOPTREPEXPORT DistanceMatrix {
     \param[in] total_number_of_models sets the size of the distance matrix 
   */
 
-void DistanceMatrix(std::size_t total_number_of_models); 
+DistanceMatrix(std::size_t total_number_of_models); 
 
 // total number of models
  std::size_t n;
@@ -32,7 +32,9 @@ void DistanceMatrix(std::size_t total_number_of_models);
 
  Floats distmat; 
  // flattened distance matrix
- 
+
+IMP_OBJECT_METHODS(DistanceMatrix);
+
 };
 
 IMPOPTREP_END_NAMESPACE

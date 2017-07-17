@@ -27,13 +27,11 @@ class IMPOPTREPEXPORT SPE {
     \param[in] components_calculate_precision is a list of (protein,domain) elements whose precision needs to be calculated (i.e. whose representation needs to be improved).
   */
 
- SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String> > components_calculate_precision);
+ SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String> > input_components_calculate_precision);
 
 void load_coordinates_and_bead_sizes_from_model_files(); 
 
 //TODO make protected after testing
-IMP::optrep::DistanceMatrix get_all_vs_all_distances(unsigned int global_bead_index);
-
 protected:
 /* directory where model RMFs and the model sample IDs are stored. */
 String models_dir_;
@@ -42,8 +40,6 @@ String models_dir_;
 std::vector<std::pair<String, String > > components_calculate_precision_;
 
  std::size_t total_number_of_models_;
- 
- std::size_t number_of_protein_domains_;
  
  std::vector<unsigned int> beads_per_protein_domain_;
 
@@ -69,12 +65,36 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
  std::vector<bool > bead_imprecise_;
  
  // Methods
-void order_components_by_topology_file_(std::vector<std::pair<String, String > > components_calculate_precision, String topology_file);
+void order_components_by_topology_file(std::vector<std::pair<String, String > > input_components_calculate_precision, String topology_file);
 
-void get_models_by_sample_(String sample_id_file);
+void get_models_by_sample(String sample_id_file);
 
-int included_protein_domain_(String chain_full_name);
+int included_protein_domain(String chain_full_name);
 
+IMP::optrep::DistanceMatrix get_all_vs_all_distances(unsigned int global_bead_index);
+
+/*
+Float get_sampling_precision(Floats cutoffs,Floats pvals,Floats cramersv,Floats populations);
+
+IMP::optrep::Clusters precision_cluster(Floats distmat,Float rmsd_cutoff);
+
+IMP::algebra::Vector2Ds get_contingency_table(IMP::optrep::Clusters cluster_result);
+
+Float percent_ensemble_explained(IMP::algebra::Vector2Ds ctable);
+
+IMP::optrep::ChiSquareTestResult test_sampling_exhaustiveness(IMP::algebra::Vector2Ds observed_contingency_table);
+
+Float estimate_single_bead_precision(unsigned int global_bead_index,Float grid_size);
+
+bool is_commensurate(Float bead_diameter,Float bead_precision,Float xscale);
+
+void get_imprecise_beads(Float xscale);
+	
+void print_bead_precisions(std::string out_file_name);
+
+void estimate_perbead_sampling_precision(Float grid_size=1.0);
+
+*/
 //IMP_OBJECT_METHODS(SPE);
 
 

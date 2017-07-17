@@ -1,6 +1,9 @@
 //IMP_SWIG_OBJECT(IMP::example, ExampleRestraint, ExampleRestraints);
 //IMP_SWIG_DECORATOR(IMP::example, ExampleDecorator, ExampleDecorators);
 //IMP_SWIG_VALUE_TEMPLATE(IMP::example, ExampleTemplateClassD)
+
+IMP_SWIG_OBJECT(IMP::optrep, Cluster, Clusters);
+
 %import "RMF.i"
 %{
 #include "RMF.h"
@@ -9,5 +12,5 @@
 %template() std::pair<std::string,std::string>;
 %template(ProteinDomainList) std::vector<std::pair<std::string,std::string> >;
 
+%include "IMP/optrep/DistanceMatrix.h"
 %include "IMP/optrep/SPE.h"
-

@@ -1,5 +1,5 @@
 /**
-*  \file DistanceMatrix.cpp
+*  \file Cluster.cpp
 *  \brief Store distance matrix corresponding to a bead 
 *
 *  Copyright 2007-2017 IMP Inventors. All rights reserved.
@@ -12,14 +12,15 @@
 #include <iostream>
 #include <string>
 #include <IMP/rmf.h>
-#include <IMP/optrep/DistanceMatrix.h>
+#include <IMP/optrep/Cluster.h>
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-DistanceMatrix::DistanceMatrix(std::size_t total_number_of_models) {
-        n=total_number_of_models;
-        
-   
+Cluster::Cluster(Int cc, Ints cm) {
+    
+    cluster_center = cc;
+    cluster_member = cm;
+    
 }
 
 IMPOPTREP_END_NAMESPACE
