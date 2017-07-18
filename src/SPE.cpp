@@ -61,8 +61,6 @@ void SPE::order_components_by_topology_file(std::vector<std::pair<String, String
 	if(input_components_calculate_precision.size()!=components_calculate_precision_.size())
 		std::cout<< "some components were not defined in the topology file!" <<std::endl; 
 
-	number_of_protein_domains_ = components_calculate_precision_.size();
-
 }
 
 /* Get the mapping of model index to sample number. 
@@ -138,6 +136,8 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         rmf::load_frame(fh_i, RMF::FrameID(0));          
 
+	unsigned int  global_bead_index=0;
+
         /* same for all models: list of (protein/domain,bead) indices for components to calculate precision.
         Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
         */ 
@@ -193,7 +193,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
         	
 } 
 
-IMP::optrep::DistanceMatrix SPE::get_all_vs_all_distances(unsigned int global_bead_index) {
+IMP::optrep::DistanceMatrix SPE::get_all_vs_all_distances(unsigned int  global_bead_index) {
         /* Return the distance matrix, minimum and maximum distance per bead.
         */
         IMP::optrep::DistanceMatrix d(total_number_of_models_);
@@ -231,9 +231,9 @@ Float SPE::get_sampling_precision(Floats cutoffs,Floats pvals,Floats cramersv,Fl
         */
         Float sampling_precision=std::numeric_limits<double>::max();
 
-        for (unsigned int i = 0;i<cutoffs.size()i++) {
-            if (populations[i]>80.0) && (pvals[i]>0.05 || cramersv[i]<0.10) {
-                if sampling_precision>cutoffs[i] { 
+        for (unsigned int i = 0;i<cutoffs.size(); i++) {
+            if ((populations[i]>80.0) && ((pvals[i]>0.05) || (cramersv[i]<0.10))) {
+                if (sampling_precision>cutoffs[i]) { 
                     sampling_precision=cutoffs[i];
                 }
             }
@@ -335,10 +335,10 @@ IMP::optrep::Clusters SPE::precision_cluster(Floats distmat,Float rmsd_cutoff) {
 			 for(Ints::iterator cm=cluster_result[ic].cluster_members.begin();cm!=cluster_result[ic].cluster_members.end();cm++) {
 				 // iterate over each cluster member of the cluster
 				
-				 if (std::binary_search(models_by_sample[0].begin(),models_by_sample[0].end(),*cm)) {
+				 if (std::binary_search(models_by_sample_[0].begin(),models_by_sample_[0].end(),*cm)) {
 					 full_ctable[ic][0]+=1.0;
 				 }
-				 else if (std::binary_search(models_by_sample[1].begin(),models_by_sample[1].end(),*cm)) { 
+				 else if (std::binary_search(models_by_sample_[1].begin(),models_by_sample_[1].end(),*cm)) { 
 				 	full_ctable[ic][1]+=1.0;
 				 }
 				
