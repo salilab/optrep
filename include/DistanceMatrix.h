@@ -12,11 +12,12 @@
 #include <IMP.h>
 #include <IMP/atom.h>
 #include <IMP/core.h>
+#include <IMP/Object.h>
 #include "optrep_config.h"
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-class IMPOPTREPEXPORT DistanceMatrix {
+class IMPOPTREPEXPORT DistanceMatrix : public Object{
  public:
  /**
     \param[in] total_number_of_models sets the size of the distance matrix 

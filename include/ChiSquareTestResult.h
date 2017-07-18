@@ -13,12 +13,12 @@
 #include <IMP.h>
 #include <IMP/atom.h>
 #include <IMP/core.h>
-#include <IMP/object_macros.h>
+#include <IMP/Object.h>
 #include "optrep_config.h"
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-class IMPOPTREPEXPORT ChiSquareTestResult {
+class IMPOPTREPEXPORT ChiSquareTestResult : public Object {
  public:
  
 ChiSquareTestResult(Float pval, Float cramersv); 

@@ -16,10 +16,9 @@
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-DistanceMatrix::DistanceMatrix(std::size_t total_number_of_models) {
+DistanceMatrix::DistanceMatrix(std::size_t total_number_of_models)  : Object("distancematrix%1%") {
         n=total_number_of_models;
-        
-   
 }
+
 
 IMPOPTREP_END_NAMESPACE

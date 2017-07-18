@@ -13,12 +13,12 @@
 #include <IMP.h>
 #include <IMP/atom.h>
 #include <IMP/core.h>
-#include <IMP/object_macros.h>
+#include <IMP/Object.h>
 #include "optrep_config.h"
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-class IMPOPTREPEXPORT Cluster {
+class IMPOPTREPEXPORT Cluster : public Object{
  public:
  
 Cluster(Int cc, Ints cm); 
@@ -31,6 +31,8 @@ Ints cluster_members;
 IMP_OBJECT_METHODS(Cluster);
 
 };
+
+IMP_OBJECTS(Cluster,Clusters);
 
 IMPOPTREP_END_NAMESPACE
 

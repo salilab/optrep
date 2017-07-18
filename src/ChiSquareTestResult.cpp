@@ -15,7 +15,7 @@
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-ChiSquareTestResult::ChiSquareTestResult(Float pv, Float cv) {
+ChiSquareTestResult::ChiSquareTestResult(Float pv, Float cv) : Object("ChisquareTestResult%1%") {
     
     pvalue = pv;
     cramersv = cv;

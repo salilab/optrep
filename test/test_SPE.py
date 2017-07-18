@@ -18,11 +18,11 @@ spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_model
 
 spe.load_coordinates_and_bead_sizes_from_model_files()
 
-for i in range(100):
-    distanceMatrix= spe.get_all_vs_all_distances(i)
-    print i
+#for i in range(100):
+#   distanceMatrix= spe.get_all_vs_all_distances(i)
+#   print i
 
-#spe.estimate_perbead_sampling_precision(grid_size=2.0)
+spe.estimate_perbead_sampling_precision(grid_size=2.0)
 
 #spe.get_imprecise_beads(xscale=1.0)
 

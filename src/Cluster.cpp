@@ -16,10 +16,10 @@
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-Cluster::Cluster(Int cc, Ints cm) {
+Cluster::Cluster(Int cc, Ints cm) : Object("cluster%1%"){
     
     cluster_center = cc;
-    cluster_member = cm;
+    cluster_members = cm;
     
 }
 
