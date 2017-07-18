@@ -20,6 +20,12 @@ IMPOPTREP_BEGIN_NAMESPACE
 /**
      Get the all vs all distances for every primitive (bead), get bead precisions, and whether a bead is imprecise based on that. 
  */
+class DistanceMatrix;
+
+class Cluster;
+
+class ChiSquareTestResult;
+
 class IMPOPTREPEXPORT SPE {
  public:
  /**
@@ -30,6 +36,12 @@ class IMPOPTREPEXPORT SPE {
  SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String> > input_components_calculate_precision);
 
 void load_coordinates_and_bead_sizes_from_model_files(); 
+
+void estimate_perbead_sampling_precision(Float grid_size=1.0);
+
+void get_imprecise_beads(Float xscale);
+
+void print_bead_precisions(std::string out_file_name);
 
 //TODO make protected after testing
 protected:
@@ -73,7 +85,6 @@ int included_protein_domain(String chain_full_name);
 
 IMP::optrep::DistanceMatrix get_all_vs_all_distances(unsigned int global_bead_index);
 
-/*
 Float get_sampling_precision(Floats cutoffs,Floats pvals,Floats cramersv,Floats populations);
 
 IMP::optrep::Clusters precision_cluster(Floats distmat,Float rmsd_cutoff);
@@ -88,13 +99,6 @@ Float estimate_single_bead_precision(unsigned int global_bead_index,Float grid_s
 
 bool is_commensurate(Float bead_diameter,Float bead_precision,Float xscale);
 
-void get_imprecise_beads(Float xscale);
-	
-void print_bead_precisions(std::string out_file_name);
-
-void estimate_perbead_sampling_precision(Float grid_size=1.0);
-
-*/
 //IMP_OBJECT_METHODS(SPE);
 
 
