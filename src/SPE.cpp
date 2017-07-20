@@ -136,7 +136,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         rmf::load_frame(fh_i, RMF::FrameID(0));          
 
-	unsigned int  global_bead_index=0;
+	    unsigned int  global_bead_index=0;
 
         /* same for all models: list of (protein/domain,bead) indices for components to calculate precision.
         Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
@@ -193,11 +193,11 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
         	
 } 
 
-IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(const unsigned int  global_bead_index) const {
+IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(const unsigned int global_bead_index) const {
     
         /* Return the distance matrix, minimum and maximum distance per bead.
         */
-        IMP_NEW(IMP::optrep::DistanceMatrix,d, (total_number_of_models_));
+        IMP_NEW(IMP::optrep::DistanceMatrix,d,(total_number_of_models_));
 
         Float mindist=std::numeric_limits<double>::max();
         Float maxdist=0.0;
@@ -221,6 +221,8 @@ IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(const unsigned int  g
 
          d->mindist = mindist;
          d->maxdist = maxdist;
+         
+        // std::cout <<  global_bead_index <<  " " <<  d->mindist <<  " " <<  d->maxdist << std::endl; 
                     
         return d.release();
 
@@ -231,6 +233,10 @@ Float SPE::get_sampling_precision(const Floats& cutoffs,const Floats& pvals,cons
         This is the first cutoff at which all 3 criteria are satisfied.
         */
         Float sampling_precision=std::numeric_limits<double>::max();
+        
+        if ( (cutoffs.size() != pvals.size()) ||  (cutoffs.size() !=cramersv.size()) ||  (cutoffs.size() != populations.size())) {
+            return (sampling_precision);
+        }
 
         for (unsigned int i = 0;i<cutoffs.size(); i++) {
             if ((populations[i]>80.0) && ((pvals[i]>0.05) || (cramersv[i]<0.10))) {
@@ -295,10 +301,12 @@ IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats& distmat,
                      curr_center=*eachu;
 		          }
              }
+             
+             //std::cout <<  "next cluster center " <<  curr_center << std::endl; 
 
              //form a new cluster with u and its neighbors
                IMP_NEW(IMP::optrep::Cluster, curr_cluster, (curr_center, neighbors[curr_center]));
-               cluster_result.push_back(curr_cluster);
+               cluster_result.push_back(curr_cluster.release());
                 
              //update neighbors 
              for(Ints::iterator ne=neighbors[curr_center].begin();ne!=neighbors[curr_center].end();ne++) {
@@ -332,8 +340,9 @@ IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats& distmat,
          //initially create the table containing all clusters
 		 for(unsigned int ic=0;ic<cluster_result.size();ic++)  { //iterate over each cluster
 			 full_ctable.push_back(IMP::algebra::Vector2D(0.,0.));
+			 
 		 }
-          
+		           
 		 for(unsigned int ic=0;ic<cluster_result.size();ic++)  { //iterate over each cluster
 			 for(Ints::iterator cm=cluster_result[ic]->cluster_members.begin();cm!=cluster_result[ic]->cluster_members.end();cm++) {
 				 // iterate over each cluster member of the cluster
@@ -344,6 +353,8 @@ IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats& distmat,
 				 else if (std::binary_search(models_by_sample_[1].begin(),models_by_sample_[1].end(),*cm)) { 
 				 	full_ctable[ic][1]+=1.0;
 				 }
+				 
+				 // std::cout <<  ic <<  " " <<  *cm <<  "  " <<  full_ctable[ic][0] << " " <<  full_ctable[ic][1] << std::endl;  
 				
 			 }
          }
@@ -451,16 +462,17 @@ IMP::optrep::ChiSquareTestResult* SPE::test_sampling_exhaustiveness(const IMP::a
 
 Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const {
     /* Estimate the sampling precision of the bead_index-th bead of protein domain.
-    */
+     */
 	
     IMP::Pointer<IMP::optrep::DistanceMatrix> dm=get_all_vs_all_distances(global_bead_index);
 
     Floats cutoffs;
 	Float curr_cutoff=0.0;
 	// Float curr_cutoff=dm.mindist; // the minimum distance is different for different beads, so standardizing it
-	while(curr_cutoff<dm->maxdist) {
+	while(curr_cutoff< dm->maxdist) {
 		cutoffs.push_back(curr_cutoff);
 		curr_cutoff+=grid_size;	
+		//std::cout << curr_cutoff <<  std::endl;
 	}
 	
     Floats pvals;
@@ -468,16 +480,19 @@ Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,c
 	Floats populations;
 	
     for(Floats::iterator c=cutoffs.begin();c!=cutoffs.end();c++) {
+        
+        std::cout << "cutoff " <<  *c << std::endl; 
         IMP::Vector<IMP::optrep::Cluster*> clusters=precision_cluster(dm->distmat,*c);
 
         IMP::algebra::Vector2Ds ctable=get_contingency_table(clusters);
-        IMP::Pointer<IMP::optrep::ChiSquareTestResult> ctr=test_sampling_exhaustiveness(ctable);
-
-        Float percent_explained=percent_ensemble_explained(ctable);
-
-        pvals.push_back(ctr->pvalue);
-        cramersv.push_back(ctr->cramersv);
-        populations.push_back(percent_explained);
+//      IMP::Pointer<IMP::optrep::ChiSquareTestResult> ctr=test_sampling_exhaustiveness(ctable);
+// 
+//      Float percent_explained=percent_ensemble_explained(ctable);
+// 
+//      pvals.push_back(ctr->pvalue);
+//      cramersv.push_back(ctr->cramersv);
+//      populations.push_back(percent_explained); 
+        
 	}
 
     Float sampling_precision = get_sampling_precision(cutoffs,pvals,cramersv,populations);

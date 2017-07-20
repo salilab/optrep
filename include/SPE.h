@@ -33,9 +33,23 @@ class IMPOPTREPEXPORT SPE {
     \param[in] topology_file the same file that was given for sampling (to know the components in the system)
   */
 
- SPE(const String topology_file, const String gsm_directory,const std::vector<std::pair<String, String> > input_components_calculate_precision);
+SPE(const String topology_file, const String gsm_directory,const std::vector<std::pair<String, String> > input_components_calculate_precision);
 
 void load_coordinates_and_bead_sizes_from_model_files(); 
+
+Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const;
+
+IMP::Vector<IMP::optrep::Cluster*> precision_cluster(const Floats& distmat,const Float rmsd_cutoff) const;
+
+IMP::algebra::Vector2Ds get_contingency_table(const IMP::Vector<IMP::optrep::Cluster*> cluster_result) const;
+
+Float percent_ensemble_explained(const IMP::algebra::Vector2Ds& ctable) const;
+
+IMP::optrep::ChiSquareTestResult* test_sampling_exhaustiveness(const IMP::algebra::Vector2Ds& observed_contingency_table) const ;
+
+Float estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const ;
+
+bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const ;
 
 void estimate_perbead_sampling_precision(const Float grid_size=1.0);
 
@@ -85,19 +99,6 @@ int included_protein_domain(const String chain_full_name) const;
 
 IMP::optrep::DistanceMatrix* get_all_vs_all_distances(const unsigned int  global_bead_index) const;
 
-Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const;
-
-IMP::Vector<IMP::optrep::Cluster*> precision_cluster(const Floats& distmat,const Float rmsd_cutoff) const;
-
-IMP::algebra::Vector2Ds get_contingency_table(const IMP::Vector<IMP::optrep::Cluster*> cluster_result) const;
-
-Float percent_ensemble_explained(const IMP::algebra::Vector2Ds& ctable) const;
-
-IMP::optrep::ChiSquareTestResult* test_sampling_exhaustiveness(const IMP::algebra::Vector2Ds& observed_contingency_table) const ;
-
-Float estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const ;
-
-bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const ;
 
 //IMP_OBJECT_METHODS(SPE);
 

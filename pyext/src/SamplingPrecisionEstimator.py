@@ -140,7 +140,7 @@ class SamplingPrecisionEstimator(object):
 
                 if dist>maxdist:
                     maxdist=dist
-                    
+                
         return (distmat,mindist,maxdist)
 
 
@@ -195,6 +195,8 @@ class SamplingPrecisionEstimator(object):
                     max_neighbors=len(neighbors[eachu])
                     currcenter=eachu
 
+            #print currcenter
+
             #form a new cluster with u and its neighbors
             cluster_centers.append(currcenter)
             cluster_members.append([n for n in neighbors[currcenter]])
@@ -229,7 +231,7 @@ class SamplingPrecisionEstimator(object):
                     full_ctable[ic][0]+=1.0
                 elif member in sample2_models:
                     full_ctable[ic][1]+=1.0
-
+                #print ic,member,full_ctable[ic][0] , full_ctable[ic][1] 
         # reduce the table by eliminating tiny clusters
         reduced_ctable=[]
         retained_clusters=[]
@@ -277,12 +279,14 @@ class SamplingPrecisionEstimator(object):
 
         #cutoffs=numpy.arange(mindist_bead,maxdist_bead,grid_size)
         cutoffs=numpy.arange(0.0,maxdist_bead,grid_size) # the minimum distance is different for different beads, so standardizing it
-        
+            
         pvals=[]
         cramersv=[]
         populations=[]
 
         for c in cutoffs:
+            print "cutoff ",c
+            
             cluster_centers,cluster_members=self.precision_cluster(distmat_bead,c)
 
             ctable,retained_clusters=self.get_contingency_table(cluster_members,self.models_by_sample[1],self.models_by_sample[2]) #TODO note that some of these are class members. But I am keeping this general and passing them as arguments for the case where we cluster on subsets of models
