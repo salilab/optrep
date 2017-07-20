@@ -83,7 +83,7 @@ void get_models_by_sample(const String sample_id_file);
 
 int included_protein_domain(const String chain_full_name) const;
 
-IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(const unsigned int  global_bead_index) const;
+IMP::optrep::DistanceMatrix* get_all_vs_all_distances(const unsigned int  global_bead_index) const;
 
 Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const;
 

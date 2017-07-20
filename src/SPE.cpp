@@ -193,7 +193,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
         	
 } 
 
-IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(unsigned int  global_bead_index) {
+IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(const unsigned int  global_bead_index) const {
     
         /* Return the distance matrix, minimum and maximum distance per bead.
         */
@@ -226,7 +226,7 @@ IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(unsigned int  global_
 
 }
 
-Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const {
+Float SPE::get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const {
         /* Given the 3 criteria for each cutoff, returns the sampling precision.
         This is the first cutoff at which all 3 criteria are satisfied.
         */
@@ -248,7 +248,7 @@ Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Flo
 
 }
 
-IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats distmat,const Float rmsd_cutoff) const {
+IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats& distmat,const Float rmsd_cutoff) const {
         /* Perform distance threshold-based clustering given the distance matrix and RMSD cutoff.
          Return the result as a list of clusters.
          TODO not sure whether the return type should have been IMP::Vector& or IMP::Vector. Doesn't C++11 optimize this for you?
@@ -312,7 +312,8 @@ IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats distmat,c
                      if (!boolUnclustered[*unn]) {
                          continue;
                         }
-                     neighbors[*unn].remove(*ne);
+                     //neighbors[*unn].remove(*ne);
+                     neighbors[*unn].erase(std::remove(neighbors[*unn].begin(),neighbors[*unn].end(),*ne), neighbors[*unn].end()); 
                     }
               }
           }
@@ -334,7 +335,7 @@ IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats distmat,c
 		 }
           
 		 for(unsigned int ic=0;ic<cluster_result.size();ic++)  { //iterate over each cluster
-			 for(Ints::iterator cm=cluster_result[ic].cluster_members.begin();cm!=cluster_result[ic].cluster_members.end();cm++) {
+			 for(Ints::iterator cm=cluster_result[ic]->cluster_members.begin();cm!=cluster_result[ic]->cluster_members.end();cm++) {
 				 // iterate over each cluster member of the cluster
 				
 				 if (std::binary_search(models_by_sample_[0].begin(),models_by_sample_[0].end(),*cm)) {
@@ -444,7 +445,7 @@ IMP::optrep::ChiSquareTestResult* SPE::test_sampling_exhaustiveness(const IMP::a
 		   Float pvalue = 1.0-boost::math::cdf(curr_distribution,chisquare);  
            Float cramersv=sqrt(chisquare/Float(total_number_of_models_));
       
-           IMP_NEW(IMP::optrep::ChiSquareTestResult, ctr, (pvalue, cramers));
+           IMP_NEW(IMP::optrep::ChiSquareTestResult, ctr, (pvalue, cramersv));
            return (ctr.release());
 }
 
@@ -458,7 +459,7 @@ Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,c
 	Float curr_cutoff=0.0;
 	// Float curr_cutoff=dm.mindist; // the minimum distance is different for different beads, so standardizing it
 	while(curr_cutoff<dm->maxdist) {
-		cutoffs.append(curr_cutoff);
+		cutoffs.push_back(curr_cutoff);
 		curr_cutoff+=grid_size;	
 	}
 	
@@ -528,8 +529,8 @@ void SPE::print_bead_precisions(const std::string out_file_name) const {
     	
 		for(unsigned int bead_index=0;bead_index<beads_per_protein_domain_[prot_index];bead_index++) { // for each bead in a domain
 			
-			fprintf(out_file,"%s %s %u %.3f %d",components_calculate_precision_[prot_index].first,
-			components_calculate_precision_[prot_index].second, bead_index, bead_precisions_[global_bead_index],
+			fprintf(out_file,"%s %s %u %.3f %d",components_calculate_precision_[prot_index].first.c_str(),
+			components_calculate_precision_[prot_index].second.c_str(), bead_index, bead_precisions_[global_bead_index],
 			int(bead_imprecise_[global_bead_index]));
 						
 			global_bead_index+=1;
@@ -541,7 +542,7 @@ void SPE::print_bead_precisions(const std::string out_file_name) const {
     fclose(out_file);
 }
     
-void SPE::estimate_perbead_sampling_precision(const Float grid_size=1.0) {
+void SPE::estimate_perbead_sampling_precision(const Float grid_size) {
 	/* For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
     Results are stored in the object's bead_precisions dictionary
     */
