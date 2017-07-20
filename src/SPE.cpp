@@ -21,7 +21,7 @@
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-SPE::SPE(String topology_file, String gsm_directory,std::vector<std::pair<String, String > > input_components_calculate_precision) {
+SPE::SPE(const String topology_file, const String gsm_directory,const std::vector<std::pair<String, String > > input_components_calculate_precision) {
         
 models_dir_=gsm_directory;
 
@@ -34,7 +34,7 @@ get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 
 }
 
-void SPE::order_components_by_topology_file(std::vector<std::pair<String, String > > input_components_calculate_precision, String topology_file) {
+void SPE::order_components_by_topology_file(const std::vector<std::pair<String, String > > input_components_calculate_precision, const String topology_file) {
 
 	std::ifstream tfile;
 	tfile.open(topology_file.c_str());
@@ -65,7 +65,7 @@ void SPE::order_components_by_topology_file(std::vector<std::pair<String, String
 
 /* Get the mapping of model index to sample number. 
 */
-void SPE::get_models_by_sample(String sample_id_file) {
+void SPE::get_models_by_sample(const String sample_id_file) {
 
     std::ifstream sifile;
     sifile.open(sample_id_file.c_str());
@@ -89,7 +89,7 @@ void SPE::get_models_by_sample(String sample_id_file) {
 /* Check if the current chain should be included for calculating bead precisions, 
 based on the list of protein domains mentioned. 
 */
-int SPE::included_protein_domain(String chain_full_name) {
+int SPE::included_protein_domain(const String chain_full_name) const {
             
     for(unsigned int i=0;i<components_calculate_precision_.size();i++) {
         
@@ -193,10 +193,11 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
         	
 } 
 
-IMP::optrep::DistanceMatrix SPE::get_all_vs_all_distances(unsigned int  global_bead_index) {
+IMP::optrep::DistanceMatrix* SPE::get_all_vs_all_distances(unsigned int  global_bead_index) {
+    
         /* Return the distance matrix, minimum and maximum distance per bead.
         */
-        IMP::optrep::DistanceMatrix d(total_number_of_models_);
+        IMP_NEW(IMP::optrep::DistanceMatrix,d, (total_number_of_models_));
 
         Float mindist=std::numeric_limits<double>::max();
         Float maxdist=0.0;
@@ -206,7 +207,7 @@ IMP::optrep::DistanceMatrix SPE::get_all_vs_all_distances(unsigned int  global_b
             for (unsigned int j = i+1;j<total_number_of_models_;j++) {     
                
                 Float dist=IMP::algebra::get_distance(bead_coords_[global_bead_index][i],bead_coords_[global_bead_index][j]);
-                d.distmat.push_back(dist);
+                d->distmat.push_back(dist);
 
                 if (dist<mindist) {
                     mindist=dist;
@@ -218,14 +219,14 @@ IMP::optrep::DistanceMatrix SPE::get_all_vs_all_distances(unsigned int  global_b
             }
         }
 
-         d.mindist = mindist;
-         d.maxdist = maxdist;
+         d->mindist = mindist;
+         d->maxdist = maxdist;
                     
-        return d;
+        return d.release();
 
 }
 
-Float SPE::get_sampling_precision(Floats cutoffs,Floats pvals,Floats cramersv,Floats populations) {
+Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const {
         /* Given the 3 criteria for each cutoff, returns the sampling precision.
         This is the first cutoff at which all 3 criteria are satisfied.
         */
@@ -247,12 +248,13 @@ Float SPE::get_sampling_precision(Floats cutoffs,Floats pvals,Floats cramersv,Fl
 
 }
 
-IMP::optrep::Clusters SPE::precision_cluster(Floats distmat,Float rmsd_cutoff) {
+IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats distmat,const Float rmsd_cutoff) const {
         /* Perform distance threshold-based clustering given the distance matrix and RMSD cutoff.
          Return the result as a list of clusters.
+         TODO not sure whether the return type should have been IMP::Vector& or IMP::Vector. Doesn't C++11 optimize this for you?
         */
 
-        IMP::optrep::Clusters cluster_result;
+        IMP::Vector<IMP::optrep::Cluster*> cluster_result;  
 		
         // Populate the neighbors of a given model
         IntsList neighbors;
@@ -295,7 +297,7 @@ IMP::optrep::Clusters SPE::precision_cluster(Floats distmat,Float rmsd_cutoff) {
              }
 
              //form a new cluster with u and its neighbors
-               IMP::optrep::Cluster curr_cluster(curr_center, neighbors[curr_center]);
+               IMP_NEW(IMP::optrep::Cluster, curr_cluster, (curr_center, neighbors[curr_center]));
                cluster_result.push_back(curr_cluster);
                 
              //update neighbors 
@@ -319,7 +321,7 @@ IMP::optrep::Clusters SPE::precision_cluster(Floats distmat,Float rmsd_cutoff) {
  
 }
                                                                                                    
- IMP::algebra::Vector2Ds SPE::get_contingency_table(IMP::optrep::Clusters cluster_result) {
+ IMP::algebra::Vector2Ds SPE::get_contingency_table(const IMP::Vector<IMP::optrep::Cluster*> cluster_result) const {
 	     /* Given the clustering and the identity of models in run1 and run2 creates the contingency table
          with 1 row per cluster and 1 column per sample.
          */
@@ -360,7 +362,7 @@ IMP::optrep::Clusters SPE::precision_cluster(Floats distmat,Float rmsd_cutoff) {
           return(reduced_ctable);
  }
 
-Float SPE::percent_ensemble_explained(IMP::algebra::Vector2Ds ctable) {
+Float SPE::percent_ensemble_explained(const IMP::algebra::Vector2Ds& ctable) const {
           /* Check what proportion of the model space the exhaustiveness was on. 
          */
          if (ctable.size()==0) {
@@ -378,16 +380,19 @@ Float SPE::percent_ensemble_explained(IMP::algebra::Vector2Ds ctable) {
           return (percent_clustered);
 }
  
-IMP::optrep::ChiSquareTestResult SPE::test_sampling_exhaustiveness(IMP::algebra::Vector2Ds observed_contingency_table) {
+IMP::optrep::ChiSquareTestResult* SPE::test_sampling_exhaustiveness(const IMP::algebra::Vector2Ds& observed_contingency_table) const {
           /* Chi2 test based on the contingency table.
           */
 				
     		if (observed_contingency_table.size()==0) {
-    	  	  	return(IMP::optrep::ChiSquareTestResult(0.0,1.0));
+                IMP_NEW(IMP::optrep::ChiSquareTestResult, ctr, (0.0,1.0));
+                return (ctr.release());
     		}
 			
 			else if(observed_contingency_table.size()==1) { //one single cluster
-    	  	  	return(IMP::optrep::ChiSquareTestResult(1.0,0.0)); // trivially converged
+    	  	  	 IMP_NEW(IMP::optrep::ChiSquareTestResult, ctr, (1.0,0.0));
+                return (ctr.release());                     // trivially converged
+
     		}
 
 			// Step 1. accumulate row and column sums of contingency table
@@ -439,19 +444,20 @@ IMP::optrep::ChiSquareTestResult SPE::test_sampling_exhaustiveness(IMP::algebra:
 		   Float pvalue = 1.0-boost::math::cdf(curr_distribution,chisquare);  
            Float cramersv=sqrt(chisquare/Float(total_number_of_models_));
       
-          return(IMP::optrep::ChiSquareTestResult(pvalue,cramersv));
+           IMP_NEW(IMP::optrep::ChiSquareTestResult, ctr, (pvalue, cramers));
+           return (ctr.release());
 }
 
-Float SPE::estimate_single_bead_precision(unsigned int global_bead_index,Float grid_size) {
+Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const {
     /* Estimate the sampling precision of the bead_index-th bead of protein domain.
     */
 	
-    IMP::optrep::DistanceMatrix dm=get_all_vs_all_distances(global_bead_index);
+    IMP::Pointer<IMP::optrep::DistanceMatrix> dm=get_all_vs_all_distances(global_bead_index);
 
     Floats cutoffs;
 	Float curr_cutoff=0.0;
 	// Float curr_cutoff=dm.mindist; // the minimum distance is different for different beads, so standardizing it
-	while(curr_cutoff<dm.maxdist) {
+	while(curr_cutoff<dm->maxdist) {
 		cutoffs.append(curr_cutoff);
 		curr_cutoff+=grid_size;	
 	}
@@ -461,16 +467,16 @@ Float SPE::estimate_single_bead_precision(unsigned int global_bead_index,Float g
 	Floats populations;
 	
     for(Floats::iterator c=cutoffs.begin();c!=cutoffs.end();c++) {
-        IMP::optrep::Clusters clusters=precision_cluster(dm.distmat,*c);
+        IMP::Vector<IMP::optrep::Cluster*> clusters=precision_cluster(dm->distmat,*c);
 
         IMP::algebra::Vector2Ds ctable=get_contingency_table(clusters);
-        IMP::optrep::ChiSquareTestResult ctr=test_sampling_exhaustiveness(ctable);
+        IMP::Pointer<IMP::optrep::ChiSquareTestResult> ctr=test_sampling_exhaustiveness(ctable);
 
         Float percent_explained=percent_ensemble_explained(ctable);
 
-        pvals.append(ctr.pvalue);
-        cramersv.append(ctr.cramersv);
-        populations.append(percent_explained);
+        pvals.push_back(ctr->pvalue);
+        cramersv.push_back(ctr->cramersv);
+        populations.push_back(percent_explained);
 	}
 
     Float sampling_precision = get_sampling_precision(cutoffs,pvals,cramersv,populations);
@@ -478,7 +484,8 @@ Float SPE::estimate_single_bead_precision(unsigned int global_bead_index,Float g
     return(sampling_precision);
 	
 }
-bool SPE::is_commensurate(Float bead_diameter,Float bead_precision,Float xscale) {
+
+bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const {
     /* Check if the sampling precision of the bead is atmost xscale times the bead_diameter.
     If not the bead is imprecise and needs to be coarse-grained.
     */
@@ -488,7 +495,7 @@ bool SPE::is_commensurate(Float bead_diameter,Float bead_precision,Float xscale)
     return true;
 }
     
-void SPE::get_imprecise_beads(Float xscale) {
+void SPE::get_imprecise_beads(const Float xscale) {
     /* For each bead check if its size is commensurate with the sampling precision.
     If not, mark it as imprecise. 
     @param xscale used to define imprecise bead. imprecise bead has sampling_precision > xscale*bead_radius.
@@ -510,7 +517,7 @@ void SPE::get_imprecise_beads(Float xscale) {
 }
     
 
-void SPE::print_bead_precisions(std::string out_file_name) {
+void SPE::print_bead_precisions(const std::string out_file_name) const {
     /* write bead index, bead precision and whether it is an imprecise bead to a file. 
     */
 	FILE* out_file;
@@ -519,10 +526,10 @@ void SPE::print_bead_precisions(std::string out_file_name) {
     unsigned int global_bead_index=0;
     for(unsigned int prot_index=0;prot_index<beads_per_protein_domain_.size();prot_index++) { // for each protein, domain
     	
-		for(unsigned int bead_index=0;bead_index<beads_per_protein_domain_[prot];bead_index++) { // for each bead in a domain
+		for(unsigned int bead_index=0;bead_index<beads_per_protein_domain_[prot_index];bead_index++) { // for each bead in a domain
 			
-			fprintf(out_file,"%s %s %u %.3f %d",components_calculate_precision[prot].first,
-			components_calculate_precision[prot].second, bead_index, bead_precisions_[global_bead_index],
+			fprintf(out_file,"%s %s %u %.3f %d",components_calculate_precision_[prot_index].first,
+			components_calculate_precision_[prot_index].second, bead_index, bead_precisions_[global_bead_index],
 			int(bead_imprecise_[global_bead_index]));
 						
 			global_bead_index+=1;
@@ -534,7 +541,7 @@ void SPE::print_bead_precisions(std::string out_file_name) {
     fclose(out_file);
 }
     
-void SPE::estimate_perbead_sampling_precision(Float grid_size=1.0) {
+void SPE::estimate_perbead_sampling_precision(const Float grid_size=1.0) {
 	/* For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
     Results are stored in the object's bead_precisions dictionary
     */
