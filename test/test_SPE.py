@@ -22,11 +22,11 @@ spe.load_coordinates_and_bead_sizes_from_model_files()
   #distanceMatrix = spe.get_all_vs_all_distances(i)
   #print i
 
-spe.estimate_single_bead_precision(0,grid_size=2.0)
+# spe.estimate_single_bead_precision(0,grid_size=2.0)
 
-#spe.estimate_perbead_sampling_precision(grid_size=2.0)
+spe.estimate_perbead_sampling_precision(grid_size=2.0)
 
-#spe.get_imprecise_beads(xscale=1.0)
+spe.get_imprecise_beads(xscale=1.0)
 
-#spe.print_bead_precisions("bead_precisions_cpp.dat")
+spe.print_bead_precisions("bead_precisions_cpp.dat")
 

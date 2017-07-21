@@ -263,6 +263,8 @@ class SamplingPrecisionEstimator(object):
         ct = numpy.transpose(contingency_table)
 
         [chisquare,pvalue,dof,expected]=scipy.stats.chi2_contingency(ct)
+        
+        #print expected,contingency_table, chisquare
 
         if dof==0.0:
             cramersv=0.0 #converged, one single cluster
@@ -285,7 +287,7 @@ class SamplingPrecisionEstimator(object):
         populations=[]
 
         for c in cutoffs:
-            print "cutoff ",c
+            #print "cutoff ",c
             
             cluster_centers,cluster_members=self.precision_cluster(distmat_bead,c)
 
@@ -298,6 +300,8 @@ class SamplingPrecisionEstimator(object):
             pvals.append(pval)
             cramersv.append(crv)
             populations.append(percent_explained)
+            
+            #print c,pval,crv,percent_explained
 
         sampling_precision = self.get_sampling_precision(cutoffs,pvals,cramersv,populations)
       

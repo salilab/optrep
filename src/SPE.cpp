@@ -441,17 +441,33 @@ IMP::optrep::ChiSquareTestResult* SPE::test_sampling_exhaustiveness(const IMP::a
 				}		
 			}
 			
+			// std::cout <<  expected_contingency_table <<  std::endl;
+			
 			Float chisquare=0.0;
 			unsigned int degrees_of_freedom=observed_contingency_table.size()-1; // dof=(#rows-1)*(#cols-1)
 			
+			Float yates_continuity_correction = 0.0;
+			
+			if (degrees_of_freedom == 1) {
+             yates_continuity_correction = 0.5;
+            }
+           
+            // std::cout <<  degrees_of_freedom <<  " " <<  yates_continuity_correction <<  std::endl;
+            
 			// Step 3. calculate the chisquare: expected-observed
 			for(unsigned int ic=0;ic<observed_contingency_table.size();ic++) { //cluster count		
 				for(unsigned int sc=0;sc<2;sc++) { // sample count (0 and 1)
-					chisquare+=(observed_contingency_table[ic][sc]-expected_contingency_table[ic][sc])*
-						(observed_contingency_table[ic][sc]-expected_contingency_table[ic][sc])/expected_contingency_table[ic][sc] ;
+        
+                   // std::cout <<  expected_contingency_table[ic][sc] <<  " " <<  observed_contingency_table[ic][sc] <<  std::endl;
+                    Float diff = fabs(observed_contingency_table[ic][sc]-expected_contingency_table[ic][sc])-yates_continuity_correction;
+					
+                    chisquare += diff*diff/expected_contingency_table[ic][sc] ;
+                    
 				}			
 			}
 	
+           // std::cout <<  chisquare <<  std::endl;
+            
 		   boost::math::chi_squared curr_distribution(degrees_of_freedom);
 		   Float pvalue = 1.0-boost::math::cdf(curr_distribution,chisquare);  
            Float cramersv=sqrt(chisquare/Float(total_number_of_models_));
@@ -481,17 +497,20 @@ Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,c
 	
     for(Floats::iterator c=cutoffs.begin();c!=cutoffs.end();c++) {
         
-        std::cout << "cutoff " <<  *c << std::endl; 
+        // std::cout << "cutoff " <<  *c << std::endl; 
         IMP::Vector<IMP::optrep::Cluster*> clusters=precision_cluster(dm->distmat,*c);
 
         IMP::algebra::Vector2Ds ctable=get_contingency_table(clusters);
-//      IMP::Pointer<IMP::optrep::ChiSquareTestResult> ctr=test_sampling_exhaustiveness(ctable);
-// 
-//      Float percent_explained=percent_ensemble_explained(ctable);
-// 
-//      pvals.push_back(ctr->pvalue);
-//      cramersv.push_back(ctr->cramersv);
-//      populations.push_back(percent_explained); 
+        
+        IMP::Pointer<IMP::optrep::ChiSquareTestResult> ctr=test_sampling_exhaustiveness(ctable);
+
+        Float percent_explained=percent_ensemble_explained(ctable);
+ 
+        pvals.push_back(ctr->pvalue);
+        cramersv.push_back(ctr->cramersv);
+        populations.push_back(percent_explained); 
+        
+        // std::cout << "cutoff " <<  *c <<  " " <<  ctr->pvalue <<  " " <<  ctr->cramersv <<  " " <<  percent_explained <<  std::endl;
         
 	}
 
@@ -544,7 +563,7 @@ void SPE::print_bead_precisions(const std::string out_file_name) const {
     	
 		for(unsigned int bead_index=0;bead_index<beads_per_protein_domain_[prot_index];bead_index++) { // for each bead in a domain
 			
-			fprintf(out_file,"%s %s %u %.3f %d",components_calculate_precision_[prot_index].first.c_str(),
+			fprintf(out_file,"%s %s %u %.3f %d\n",components_calculate_precision_[prot_index].first.c_str(),
 			components_calculate_precision_[prot_index].second.c_str(), bead_index, bead_precisions_[global_bead_index],
 			int(bead_imprecise_[global_bead_index]));
 						
