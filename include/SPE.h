@@ -35,27 +35,23 @@ class IMPOPTREPEXPORT SPE {
 
 SPE(const String topology_file, const String gsm_directory,const std::vector<std::pair<String, String> > input_components_calculate_precision);
 
-void load_coordinates_and_bead_sizes_from_model_files(); 
+void load_coordinates_and_bead_sizes_from_model_files(bool break_after_first_model=false); 
 
-Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const;
+/* this was for mono (unparallellized) code. Runningall ona a single core */ 
+void estimate_all_beads_sampling_precision(const Float grid_size=1.0);
 
-IMP::Vector<IMP::optrep::Cluster*> precision_cluster(const Floats& distmat,const Float rmsd_cutoff) const;
+void get_all_imprecise_beads(const Float xscale);:
 
-IMP::algebra::Vector2Ds get_contingency_table(const IMP::Vector<IMP::optrep::Cluster*> cluster_result) const;
+void print_all_bead_precisions(const std::string out_file_name) const ;
 
-Float percent_ensemble_explained(const IMP::algebra::Vector2Ds& ctable) const;
+/*end API for mono code*/
 
-IMP::optrep::ChiSquareTestResult* test_sampling_exhaustiveness(const IMP::algebra::Vector2Ds& observed_contingency_table) const ;
+/* this is for parallellized code. 1 core per bead. */
+String estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size=1.0, const  Float xscale) const;
 
-Float estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const ;
+/* designed return value as a string, as python is capable of parsing it. It could have been an object or an IMP_NAED_TUPLE_3 though */
 
-bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const ;
-
-void estimate_perbead_sampling_precision(const Float grid_size=1.0);
-
-void get_imprecise_beads(const Float xscale);
-
-void print_bead_precisions(const std::string out_file_name) const ;
+/*end API for parallel code*/
 
 //TODO make protected after testing
 protected:
@@ -66,8 +62,12 @@ String models_dir_;
 std::vector<std::pair<String, String > > components_calculate_precision_;
 
  std::size_t total_number_of_models_;
- 
- std::vector<unsigned int> beads_per_protein_domain_;
+
+ /* required for manager in parallel environment to assign tasks. 
+  * Also used by some of the mono methods (non-parallel) */ 
+ unsigned int number_of_global_beads_ = 0; 
+
+ std::vector<std::pair<unsigned int,unsigned int > > global_index_to_protein_and_local_bead_index_map_; 
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
  */
@@ -98,6 +98,20 @@ void get_models_by_sample(const String sample_id_file);
 int included_protein_domain(const String chain_full_name) const;
 
 IMP::optrep::DistanceMatrix* get_all_vs_all_distances(const unsigned int  global_bead_index) const;
+
+Float get_sampling_precision(const Floats& cutoffs,const Floats& pvals,const Floats& cramersv,const Floats& populations) const;
+
+IMP::Vector<IMP::optrep::Cluster*> precision_cluster(const Floats& distmat,const Float rmsd_cutoff) const;
+
+IMP::algebra::Vector2Ds get_contingency_table(const IMP::Vector<IMP::optrep::Cluster*> cluster_result) const;
+
+Float percent_ensemble_explained(const IMP::algebra::Vector2Ds& ctable) const;
+
+IMP::optrep::ChiSquareTestResult* test_sampling_exhaustiveness(const IMP::algebra::Vector2Ds& observed_contingency_table) const ;
+
+Float estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const ;
+
+bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const ;
 
 
 //IMP_OBJECT_METHODS(SPE);

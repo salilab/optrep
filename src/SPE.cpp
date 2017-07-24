@@ -14,6 +14,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <boost/math/distributions/chi_squared.hpp>
 #include <IMP/rmf.h>
 #include <IMP/optrep/SPE.h>
@@ -103,7 +104,7 @@ int SPE::included_protein_domain(const String chain_full_name) const {
     return(-1);
 }
 
-void SPE::load_coordinates_and_bead_sizes_from_model_files() {
+void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_first_model) {
    /* Load all the coordinates from all good scoring models.
         Store them by bead type so that it is easy to calculate RMSD/precision.
         TODO does not do alignment yet
@@ -136,7 +137,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         rmf::load_frame(fh_i, RMF::FrameID(0));          
 
-	    unsigned int  global_bead_index=0;
+	unsigned int  global_bead_index=0;
 
         /* same for all models: list of (protein/domain,bead) indices for components to calculate precision.
         Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
@@ -154,10 +155,6 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
                     if (protein_domain_index == -1) 
                         continue;
                     
-                    if (i==0) { // assuming one chain per domain
-                        beads_per_protein_domain_.push_back(0);
-                    }
-		                   
                     IMP::atom::Hierarchies beads_i = IMP::atom::get_leaves(chains_i[ci]);
                     for (unsigned int bi = 0; bi<beads_i.size();bi++) { 
                         
@@ -167,9 +164,11 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
                             //create new coords list
                             bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
                             
-                            beads_per_protein_domain_.back()+=1;
-                                                
-                            // assume same bead sizes for all models
+			    std::pair<unsigned int,unsigned int> indices = {(unsigned)protein_domain_index,bi};
+
+                            global_index_to_protein_and_local_bead_index_map.push_back(indices);
+
+			    // assume same bead sizes for all models
                             Float curr_dia=IMP::core::XYZR(beads_i[bi]).get_radius()*2.0;
                             bead_diameter_.push_back(curr_dia);
                         }	
@@ -186,9 +185,13 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files() {
 
         } // end for state
 
+	if(break_after_first_model) {
+		break;
+	}
+
  	}// end for each model
 	
-	
+        number_of_global_beads_ = bead_diameter_.size();	
 	//std::cout << beads_per_protein_domain_.size() <<" " <<   beads_per_protein_domain_[0] <<  " " <<  beads_per_protein_domain_[1] << std::endl; 
         	
 } 
@@ -529,16 +532,33 @@ bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,c
     } 
     return true;
 }
-    
-void SPE::get_imprecise_beads(const Float xscale) {
+
+String estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
+	Float bead_precision = estimate_single_bead_precision(global_bead_index,grid_size);
+
+	Float bead_imprecise = true;
+	if (is_commensurate(bead_diameter_[global_bead_index],sampling_precision,xscale)) {
+                bead_imprecise = false;
+        }
+
+	// Get component index and bead index inside that component
+       unsigned int prot_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].first;
+       unsigned int local_bead_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].second;
+
+       char outstring[500];
+        sprintf(outstring,"%s %s %10u %.3f %2d",components_calculate_precision_[prot_index].first.c_str(),components_calculate_precision_[prot_index].second.c_str(), local_bead_index,bead_precision,int(bead_imprecise));
+
+      return(String(outstring));
+
+}
+
+void SPE::get_all_imprecise_beads(const Float xscale) {
     /* For each bead check if its size is commensurate with the sampling precision.
     If not, mark it as imprecise. 
     @param xscale used to define imprecise bead. imprecise bead has sampling_precision > xscale*bead_radius.
     */
 
-	unsigned int total_number_of_global_beads=bead_diameter_.size();
-	
-	for(unsigned int global_bead_index=0;global_bead_index < total_number_of_global_beads;global_bead_index++) {  
+	for(unsigned int global_bead_index=0;global_bead_index < number_of_global_beads_;global_bead_index++) {  
         if (!is_commensurate(bead_diameter_[global_bead_index],bead_precisions_[global_bead_index],xscale)) {
         	bead_imprecise_.push_back(true); 
         }
@@ -552,38 +572,30 @@ void SPE::get_imprecise_beads(const Float xscale) {
 }
     
 
-void SPE::print_bead_precisions(const std::string out_file_name) const {
+void SPE::print_all_bead_precisions(const std::string out_file_name) const {
     /* write bead index, bead precision and whether it is an imprecise bead to a file. 
     */
 	FILE* out_file;
 	out_file=fopen(out_file_name.c_str(), "w");
    
-    unsigned int global_bead_index=0;
-    for(unsigned int prot_index=0;prot_index<beads_per_protein_domain_.size();prot_index++) { // for each protein, domain
-    	
-		for(unsigned int bead_index=0;bead_index<beads_per_protein_domain_[prot_index];bead_index++) { // for each bead in a domain
-			
-			fprintf(out_file,"%s %s %u %.3f %d\n",components_calculate_precision_[prot_index].first.c_str(),
-			components_calculate_precision_[prot_index].second.c_str(), bead_index, bead_precisions_[global_bead_index],
-			int(bead_imprecise_[global_bead_index]));
+    for(unsigned int global_bead_index=0;global_bead_index < number_of_global_beads_;global_bead_index++) { // for each protein, domain
+	        unsigned int prot_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].first;
+		unsigned int local_bead_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].second;
+
+		fprintf(out_file,"%s %s %u %.3f %d\n",components_calculate_precision_[prot_index].first.c_str(),
+			components_calculate_precision_[prot_index].second.c_str(), local_bead_index, bead_precisions_[global_bead_index],int(bead_imprecise_[global_bead_index]));
 						
-			global_bead_index+=1;
-			
-		}	
 		 
     }
             
     fclose(out_file);
 }
     
-void SPE::estimate_perbead_sampling_precision(const Float grid_size) {
+void SPE::estimate_all_beads_sampling_precision(const Float grid_size) {
 	/* For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
     Results are stored in the object's bead_precisions dictionary
     */
-	   
-	unsigned int total_number_of_global_beads=bead_diameter_.size();
-	
-	for(unsigned int global_bead_index=0;global_bead_index < total_number_of_global_beads;global_bead_index++) {  
+	for(unsigned int global_bead_index=0;global_bead_index < number_of_global_beads_;global_bead_index++) {  
 			
 			bead_precisions_.push_back(estimate_single_bead_precision(global_bead_index,grid_size));
 	
