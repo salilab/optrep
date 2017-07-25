@@ -166,7 +166,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
                             
 			    std::pair<unsigned int,unsigned int> indices = {(unsigned)protein_domain_index,bi};
 
-                            global_index_to_protein_and_local_bead_index_map.push_back(indices);
+                            global_index_to_protein_and_local_bead_index_map_.push_back(indices);
 
 			    // assume same bead sizes for all models
                             Float curr_dia=IMP::core::XYZR(beads_i[bi]).get_radius()*2.0;
@@ -534,10 +534,10 @@ bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,c
 }
 
 String SPE::estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
-	Float bead_precision = estimate_single_bead_precision(global_bead_index,grid_size);
+	Float bead_sampling_precision = estimate_single_bead_precision(global_bead_index,grid_size);
 
 	Float bead_imprecise = true;
-	if (is_commensurate(bead_diameter_[global_bead_index],sampling_precision,xscale)) {
+	if (is_commensurate(bead_diameter_[global_bead_index],bead_sampling_precision,xscale)) {
                 bead_imprecise = false;
         }
 
@@ -546,7 +546,7 @@ String SPE::estimate_and_print_single_bead_precision(const unsigned int global_b
        unsigned int local_bead_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].second;
 
        char outstring[500];
-        sprintf(outstring,"%s %s %10u %.3f %2d",components_calculate_precision_[prot_index].first.c_str(),components_calculate_precision_[prot_index].second.c_str(), local_bead_index,bead_precision,int(bead_imprecise));
+        sprintf(outstring,"%s %s %10u %.3f %2d",components_calculate_precision_[prot_index].first.c_str(),components_calculate_precision_[prot_index].second.c_str(), local_bead_index,bead_sampling_precision,int(bead_imprecise));
 
       return(String(outstring));
 

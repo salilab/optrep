@@ -47,7 +47,7 @@ void print_all_bead_precisions(const std::string out_file_name) const ;
 /*end API for mono code*/
 
 /* this is for parallellized code. 1 core per bead. */
-String estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size=1.0, const  Float xscale) const;
+String estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size=1.0, const  Float xscale=1.0) const;
 
 /* designed return value as a string, as python is capable of parsing it. It could have been an object or an IMP_NAED_TUPLE_3 though */
 
