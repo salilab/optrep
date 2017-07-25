@@ -27,6 +27,10 @@ class ChiSquareTestResult;
 
 class IMPOPTREPEXPORT SPE {
  public:
+/* required for manager in parallel environment to assign tasks. 
+  * Also used by some of the mono methods (non-parallel) */
+ unsigned int number_of_global_beads_ = 0;
+
  /**
 	\param[in] gsm_directory the directory containing good-scoring models. Should also contain the sample id file, the file containing the sample identity (1 or 2) for each good-scoring model RMF (model_sample_ids.txt)
     \param[in] components_calculate_precision is a list of (protein,domain) elements whose precision needs to be calculated (i.e. whose representation needs to be improved).
@@ -63,10 +67,6 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
 
  std::size_t total_number_of_models_;
 
- /* required for manager in parallel environment to assign tasks. 
-  * Also used by some of the mono methods (non-parallel) */ 
- unsigned int number_of_global_beads_ = 0; 
-
  std::vector<std::pair<unsigned int,unsigned int > > global_index_to_protein_and_local_bead_index_map_; 
 
  /* model IDs for models in each sample. array of 2 vectors, one per sample. 
@@ -83,7 +83,9 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
 
  /* vector of diameter values for each bead */
  Floats bead_diameter_;
- 
+
+/* the next two are not used in parallel code.*/
+
   /* vector of precision values for each bead */ 
  Floats bead_precisions_;
 

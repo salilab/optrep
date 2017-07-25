@@ -7,26 +7,38 @@ import IMP.pmi.tools
 import IMP.pmi.topology
 import os,sys,string,math
 import IMP.optrep
+import IMP.parallel
+import parallel_tasks
 
-#components_to_update=IMP.optrep.ProteinDomainList([("B","B_1"),("A","A_1")]) 
+def running_on_cluster():
+    import distutils.spawn
+    return distutils.spawn.find_executable('qsub') is not None
 
-components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
+numCores=int(sys.argv[1])
 
-# outer () is for argument, [] is for vector, inner () is for string pair.
+# Set up a Manager to keep track of slaves and our tasks
+m = IMP.parallel.Manager()
 
-spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
+# Add slaves  
+for i in range(numCores):
+    
+    if running_on_cluster():
+        s = IMP.parallel.SGEQsubSlaveArray()
+    else:
+        s = IMP.parallel.LocalSlave()
+    m.add_slave(s)
+    
+# Generate a context (an environment on each slave in which tasks will be
+# run). Provide a setup function for this context. 
+c = m.get_context(parallel_tasks.slave_setup)
 
-spe.load_coordinates_and_bead_sizes_from_model_files()
+num_global_beads = parallel_tasks.master_setup()
 
-#for i in range(10):
-  #distanceMatrix = spe.get_all_vs_all_distances(i)
-  #print i
+# Add tasks with different input parameters
+for b in range(num_global_beads):
+    c.add_task(parallel_tasks.SlaveTask(b))
 
-# spe.estimate_single_bead_precision(0,grid_size=2.0)
-
-spe.estimate_all_beads_sampling_precision(grid_size=2.0)
-
-spe.get_all_imprecise_beads(xscale=1.0)
-
-spe.print_all_bead_precisions("bead_precisions_cpp.dat")
-
+# Run all tasks, distributed between the slaves. Get the results in
+# the order they are returned (not necessarily the order they were created).
+for x in c.get_results_unordered():
+    print(x)
