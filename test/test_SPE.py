@@ -24,9 +24,9 @@ spe.load_coordinates_and_bead_sizes_from_model_files()
 
 # spe.estimate_single_bead_precision(0,grid_size=2.0)
 
-spe.estimate_perbead_sampling_precision(grid_size=2.0)
+spe.estimate_all_beads_sampling_precision(grid_size=2.0)
 
-spe.get_imprecise_beads(xscale=1.0)
+spe.get_all_imprecise_beads(xscale=1.0)
 
-spe.print_bead_precisions("bead_precisions_cpp.dat")
+spe.print_all_bead_precisions("bead_precisions_cpp.dat")
 

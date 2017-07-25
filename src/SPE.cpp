@@ -533,7 +533,7 @@ bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,c
     return true;
 }
 
-String estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
+String SPE::estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
 	Float bead_precision = estimate_single_bead_precision(global_bead_index,grid_size);
 
 	Float bead_imprecise = true;
