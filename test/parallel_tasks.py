@@ -1,3 +1,4 @@
+
 # this file contains the setup and tasks for calculating per-bead sampling precision.
 #
 
@@ -5,26 +6,14 @@ import IMP
 import IMP.optrep
 
 def slave_setup():
-    """ 
-    Given a set of protein/domain components, load all their coordinates from models into memory.
-    Use slaves in a parallel environment to get the sampling precision of each bead. 
-    """
-    components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
-
-    # outer () is for argument, [] is for vector, inner () is for string pair.
-
-    spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
-
-    spe.load_coordinates_and_bead_sizes_from_model_files()
     
-    return(spe)
+    
+    return()
 
-def master_setup():
+def master_setup(components_to_update):
     """ 
     Given a set of protein/domain components, find the total number of beads across proteins.
     """ 
-    components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
-
     # outer () is for argument, [] is for vector, inner () is for string pair.
 
     spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
@@ -41,18 +30,39 @@ def master_setup():
 
 class SlaveTask(object):
 
-    def __init__(self,global_bead_index):
-        self.global_bead_index = global_bead_index
-
-    def __call__(self, spe):
-        """Note that the
-        input parameters to this method (spe) are those returned by
-        the setup function above."""
+    def __init__(self,grid_size,xscale,start_bead_index,end_bead_index):
         
-        bead_precision_output = spe.estimate_and_print_single_bead_precision(self.global_bead_index,
-        2.0, 1.0)
-        print bead_precision_output
-
-        #return(bead_precision_output)
-        return(1.0)
+        self.grid_size=grid_size
+        self.xscale=xscale
+        self.start_bead_index=start_bead_index
+        self.end_bead_index=end_bead_index
+        
+        
+    def __call__(self):
+        """Note that the
+        input parameters to this method are those returned by
+        the setup function above.
+        """
+        
+        """ 
+        Given a set of protein/domain components, load all their coordinates from models into memory.
+        Use slaves in a parallel environment to get the sampling precision of each bead. 
+        """
+        
+        #components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
+        
+        
+        #spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
+    
+        #spe.load_coordinates_and_bead_sizes_from_model_files()
+        
+        #bead_precision_output_list = print_precision_for_range_of_beads(self.start_bead_index, self.end_bead_index,
+#self.grid_size, self.xscale)
+                
+        #for out_string in bead_precision_output_list:
+            #print out_string
+            
+        return (1.0)
+            
+        #return(bead_precision_output_list)
 

@@ -533,7 +533,7 @@ bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,c
     return true;
 }
 
-String SPE::estimate_and_print_single_bead_precision(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
+String SPE::get_single_bead_precision_output(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
 	Float bead_sampling_precision = estimate_single_bead_precision(global_bead_index,grid_size);
 
 	Float bead_imprecise = true;
@@ -552,11 +552,27 @@ String SPE::estimate_and_print_single_bead_precision(const unsigned int global_b
 
 }
 
+Strings SPE::print_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
+const Float grid_size, const  Float xscale) const {
+	
+	Strings result;
+	
+	for(unsigned int i=start_global_bead_index;i<=end_global_bead_index;i++) {
+		result.push_back(get_single_bead_precision_output(i,grid_size,xscale));
+		
+	}
+	
+	return(result);
+	
+}
+
+
+/*
 void SPE::get_all_imprecise_beads(const Float xscale) {
-    /* For each bead check if its size is commensurate with the sampling precision.
-    If not, mark it as imprecise. 
-    @param xscale used to define imprecise bead. imprecise bead has sampling_precision > xscale*bead_radius.
-    */
+    // For each bead check if its size is commensurate with the sampling precision.
+    // If not, mark it as imprecise. 
+    //@param xscale used to define imprecise bead. imprecise bead has sampling_precision > xscale*bead_radius.
+    //
 
 	for(unsigned int global_bead_index=0;global_bead_index < number_of_global_beads_;global_bead_index++) {  
         if (!is_commensurate(bead_diameter_[global_bead_index],bead_precisions_[global_bead_index],xscale)) {
@@ -573,8 +589,8 @@ void SPE::get_all_imprecise_beads(const Float xscale) {
     
 
 void SPE::print_all_bead_precisions(const std::string out_file_name) const {
-    /* write bead index, bead precision and whether it is an imprecise bead to a file. 
-    */
+    // write bead index, bead precision and whether it is an imprecise bead to a file. 
+    //
 	FILE* out_file;
 	out_file=fopen(out_file_name.c_str(), "w");
    
@@ -592,9 +608,9 @@ void SPE::print_all_bead_precisions(const std::string out_file_name) const {
 }
     
 void SPE::estimate_all_beads_sampling_precision(const Float grid_size) {
-	/* For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
-    Results are stored in the object's bead_precisions dictionary
-    */
+	// For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
+    //Results are stored in the object's bead_precisions dictionary
+    //
 	for(unsigned int global_bead_index=0;global_bead_index < number_of_global_beads_;global_bead_index++) {  
 			
 			bead_precisions_.push_back(estimate_single_bead_precision(global_bead_index,grid_size));
@@ -602,5 +618,6 @@ void SPE::estimate_all_beads_sampling_precision(const Float grid_size) {
     }
             
 }
+*/
 
 IMPOPTREP_END_NAMESPACE
