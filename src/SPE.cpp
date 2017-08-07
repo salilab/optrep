@@ -567,7 +567,7 @@ const Float grid_size, const  Float xscale) const {
 }
 
 
-/*
+
 void SPE::get_all_imprecise_beads(const Float xscale) {
     // For each bead check if its size is commensurate with the sampling precision.
     // If not, mark it as imprecise. 
@@ -618,6 +618,6 @@ void SPE::estimate_all_beads_sampling_precision(const Float grid_size) {
     }
             
 }
-*/
+
 
 IMPOPTREP_END_NAMESPACE

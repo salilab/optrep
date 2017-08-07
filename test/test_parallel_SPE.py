@@ -34,7 +34,7 @@ for i in range(num_cores):
     
 # Generate a context (an environment on each slave in which tasks will be
 # run). Provide a setup function for this context. 
-c = m.get_context(parallel_tasks.slave_setup())
+c = m.get_context(parallel_tasks.slave_setup)
 
 num_global_beads = parallel_tasks.master_setup(components_to_update)
 
@@ -51,5 +51,11 @@ for i in range(num_cores):
 
 # Run all tasks, distributed between the slaves. Get the results in
 # the order they are returned (not necessarily the order they were created).
+
+#for bead_precision_list in c.get_results_unordered():
+   #for out_string in bead_precision_list:
+       #print out_string
+       
 for x in c.get_results_unordered():
-   print(x)
+    print(x)
+       

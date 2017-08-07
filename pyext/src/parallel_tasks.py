@@ -1,22 +1,23 @@
 
 # this file contains the setup and tasks for calculating per-bead sampling precision.
-#
 
 import IMP
-import IMP.optrep
+import IMP.optrep 
 
 def slave_setup():
     
     
     return()
 
-def master_setup(components_to_update):
+def master_setup(components_to_update,run_dir,topology_file):
     """ 
     Given a set of protein/domain components, find the total number of beads across proteins.
     """ 
     # outer () is for argument, [] is for vector, inner () is for string pair.
+    
+    components_to_update=IMP.optrep.ProteinDomainList(components_to_update)
 
-    spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
+    spe=IMP.optrep.SPE(topology_file,run_dir,components_to_update)
     
     spe.load_coordinates_and_bead_sizes_from_model_files(True) # loads only first model to get the number of beads in the system. 
     
@@ -30,7 +31,11 @@ def master_setup(components_to_update):
 
 class SlaveTask(object):
 
-    def __init__(self,grid_size, xscale,start_bead_index,end_bead_index):
+    def __init__(self,components_to_update,topology_file,run_dir,grid_size, xscale,start_bead_index,end_bead_index):
+   
+        self.components_to_update=IMP.optrep.ProteinDomainList(components_to_update) #TODO check
+        self.topology_file=topology_file
+        self.run_dir=run_dir
         self.grid_size = grid_size
         self.xscale=xscale
         self.start_bead_index=start_bead_index
@@ -47,11 +52,8 @@ class SlaveTask(object):
         Given a set of protein/domain components, load all their coordinates from models into memory.
         Use slaves in a parallel environment to get the sampling precision of each bead. 
         """
-        
-        components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
-        
-        
-        spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
+                     
+        spe=IMP.optrep.SPE(self.topology_file,self.run_dir,self.components_to_update)
     
         spe.load_coordinates_and_bead_sizes_from_model_files()
         
@@ -59,8 +61,5 @@ class SlaveTask(object):
 self.grid_size, self.xscale)
                         
         return(bead_precision_output_list)
-        #for out_str in bead_precision_output_list:
-            #print out_str
-            
-        # return(1.0)
+     
 

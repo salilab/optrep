@@ -41,13 +41,12 @@ SPE(const String topology_file, const String gsm_directory,const std::vector<std
 
 void load_coordinates_and_bead_sizes_from_model_files(bool break_after_first_model=false); 
 
-/* this was for mono (unparallellized) code. Running all ona a single core */ 
-/*void estimate_all_beads_sampling_precision(const Float grid_size=1.0);
+/* this was for mono (unparallellized) code. Runningall ona a single core */ 
+void estimate_all_beads_sampling_precision(const Float grid_size=1.0);
 
 void get_all_imprecise_beads(const Float xscale);
 
 void print_all_bead_precisions(const std::string out_file_name) const ;
-*/
 
 /*end API for mono code*/
 
