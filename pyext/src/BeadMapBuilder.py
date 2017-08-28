@@ -25,9 +25,10 @@ class BeadMapBuilder(object):
         self.merged_bead={}  # list of booleans, one per bead, for each (protein,domain) key. The boolean says whether that bead was merged with another in the current iteration.
     
             
-    def set_bead_map_from_topology_file(self,topology_file):
+    def set_bead_map_from_topology_file(self,topology_file,resolution=1):
         '''Given a topology file, read its contents to the bead map object.
         @param topology_file list of proteins, domains, residue ranges, pdb files and chains
+        @param resolution the size of bead to be created
         '''
        
         fl=open(topology_file,'r')
@@ -40,7 +41,7 @@ class BeadMapBuilder(object):
             start_residue_index=int(fields[3])
             end_residue_index=int(fields[4])
             
-            self.set_bead_map_given_residue_range((protein,domain),start_residue_index,end_residue_index)
+            self.set_bead_map_given_residue_range((protein,domain),start_residue_index,end_residue_index,resolution)
     
         fl.close()
         
@@ -69,7 +70,7 @@ class BeadMapBuilder(object):
         
         fl.close()
         
-    def set_bead_map_given_residue_range(self,protein_domain_key,start_residue_index,end_residue_index):
+    def set_bead_map_given_residue_range(self,protein_domain_key,start_residue_index,end_residue_index,resolution):
         '''Given a range of contiguous residues, set the bead map of the protein domain to this list of residues.
         @param start_residue_index starting residue of the bead map list
         @param end_residue_index end residue of the bead map list
@@ -77,8 +78,8 @@ class BeadMapBuilder(object):
         # reset the bead map
         self.bead_maps[protein_domain_key]=[]
 
-        for i in range(start_residue_index,end_residue_index+1):
-            self.bead_maps[protein_domain_key].append([i,i]) 
+        for i in range(start_residue_index,end_residue_index+1,resolution):
+            self.bead_maps[protein_domain_key].append([i,min(i+resolution-1,end_residue_index)]) 
     
     def _get_bead_size(self,protein_domain_key,bead_index):
         ''' Given the index of the bead in the list returns the number of residues in the bead.
@@ -93,44 +94,6 @@ class BeadMapBuilder(object):
         size = self.bead_maps[protein_domain_key][len(self.bead_maps[protein_domain_key])-1][1]-self.bead_maps[protein_domain_key][0][0]+1
         return size
 
-    def coarsen_bead(self,protein_domain_key,bead_index,cg_bead_size):
-        ''' Coarsen the bead with given bead index to the cg_bead_size.
-        Use knowledge of the bead list and size of each bead currently in the list.
-        Merge along the backbone, once on the left and once on the right till we reach the desired bead size.
-        This method makes changes to the bead_maps and merged_bead lists in the object.
-        '''
-    
-        num_residues_bead=self._get_bead_size(protein_domain_key,bead_index)
-        
-        counter=0 # number of cycles. 1 cycle = 1 bead to the left and right each merged with current bead
-        
-        while num_residues_bead<cg_bead_size: 
-                    
-                if num_residues_bead==self._number_of_residues_in_protein_domain(protein_domain_key):
-                    break
-
-                counter+=1
-                
-                for neighbor_index in [bead_index-counter,bead_index+counter]:
-                    #print bead_index, neighbor_index,num_residues_bead
-
-                    # bumping into boundaries, or into an already merged neighbor
-                    if neighbor_index>=len(self.bead_maps[protein_domain_key]) or neighbor_index<0 or self.merged_bead[protein_domain_key][neighbor_index]:
-                        continue
-                    
-                    # Update the residues contained in the current bead by incorporating residues in the neighboring bead
-                    self.bead_maps[protein_domain_key][bead_index][0]=self.bead_maps[protein_domain_key][min(bead_index,neighbor_index)][0]
-                
-                    self.bead_maps[protein_domain_key][bead_index][1]=self.bead_maps[protein_domain_key][max(bead_index,neighbor_index)][1]
-             
-                    self.merged_bead[protein_domain_key][neighbor_index]=True # this is the index of the bead that was merged with the current imprecise bead index
-                            
-                    num_residues_bead=self._get_bead_size(protein_domain_key,bead_index)
-                    
-                     # check if we did not already reach the maximum CG size       
-                    if num_residues_bead>=cg_bead_size: 
-                        break
-                     
     def update_single_bead_map(self,protein_domain_key,cg_bead_size):
        '''Get the bead map corresponding to the current level of coarse-graining. If we are coarse-graining for the first time, can do highest resolution beads. Else can use the previous bead map and coarse-grain it incrementally. 
        '''
@@ -151,19 +114,35 @@ class BeadMapBuilder(object):
        if len(self.bead_maps[protein_domain_key])==0:
            raise ValueError("Before attempting to coarse-grain, need to set the bead map for %s",protein_domain_key)
            return False
-
+            
        # Initialize the boolean that says which beads were merged
        self.merged_bead[protein_domain_key]=[False for i in range(len(self.bead_maps[protein_domain_key]))] # Boolean that says if a bead index was merged recently in the current round of coarse-graining
-              
-       for imprecise_bead_index in self.imprecise_beads[protein_domain_key]:
-            # Make this bead bigger by combining adjacent beads, one from left and one from right  
-            # along sequence till the desired (next level) bead size is reached.
-
-            if self.merged_bead[protein_domain_key][imprecise_bead_index]: # this bead was already merged in the current step. 
-                continue
-            
-            self.coarsen_bead(protein_domain_key,imprecise_bead_index,cg_bead_size) # changes the bead_maps and the merged_bead lists
-      
+       
+       # current bead on which we are coarse-graining
+       curr_bead_index = -1 # uninitialized value
+       
+       #i is the current bead index
+       for i in range(len(self.bead_maps[protein_domain_key])):
+           
+           # it is an imprecise bead
+           if i in self.imprecise_beads[protein_domain_key]: #TODO this can be faster by going serially through imprecise beads
+               
+               #if we are not cg'ing any bead right now, make this the bead to cg.
+               if curr_bead_index==-1:
+                   curr_bead_index=i
+           
+               #cg the current bead to cg by adding residues from the current bead
+               self.bead_maps[protein_domain_key][curr_bead_index][1]=self.bead_maps[protein_domain_key][i][1]
+               
+               # mark bead as merged if it is not the bead we are cg'ing
+               if curr_bead_index!=i:
+                   self.merged_bead[protein_domain_key][i]=True
+                   
+               # if maximum bead size reached, or the next bead is precise, need to stop cg'ing and reset the current bead to cg.
+               if self._get_bead_size(protein_domain_key,curr_bead_index)>=cg_bead_size or (i+1) not in self.imprecise_beads[protein_domain_key]:
+                   curr_bead_index=-1     
+               
+       # add all non-merged beads to new_bead_map
        map_changed=False
        new_bead_map=[]
        
@@ -174,7 +153,7 @@ class BeadMapBuilder(object):
         
            else:
                map_changed=True
-               
+             
        self.bead_maps[protein_domain_key]=new_bead_map    
    
        # After getting a new bead map, need to reset the imprecise_beads of protein domain
@@ -203,14 +182,18 @@ class BeadMapBuilder(object):
     
         ibf=open(imprecise_beads_file,'r')
         for ln in ibf.readlines():
-            is_imprecise  = ln.strip().split()[4]
+            fields=ln.strip().split()
+            is_imprecise  = int(fields[4])
             if not is_imprecise:
                 continue
-            protein_domain_key=(ln.strip().split()[0],ln.strip().split()[1])
-            self.imprecise_beads[protein_domain_key].append(ln.strip().split()[2])  
-        
+            protein_domain_key=(fields[0],fields[1])
+            if protein_domain_key in self.imprecise_beads:
+                self.imprecise_beads[protein_domain_key].append(int(fields[2]))
+            else:
+                self.imprecise_beads[protein_domain_key]=[int(fields[2])]
+                        
         ibf.close()
-        
+
     def write_bead_map_to_file(self,output_file):
         ''' Write bead maps to file. Need to access this in the case of the next iteration of coarse-graining.
         '''

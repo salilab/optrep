@@ -1,7 +1,7 @@
 
 import IMP
 import IMP.optrep
-import IMP.optrep.SamplingPrecisionEstimator
+#import IMP.optrep.SamplingPrecisionEstimator
 import os,sys,string,math
 import argparse
 import IMP.parallel
@@ -51,9 +51,7 @@ def output_precisions_to_file(bead_precisions,all_beads_output_file):
     for (prot,dom) in bead_precisions:
         
         for bead_data in bead_precisions[(prot,dom)]:
-            
-            print >>abof,prot,dom,bead_data[0],".2f" %(bead_data[1]),bead_data[2]
-    
+            print >>abof,prot,dom,bead_data[0],bead_data[1],bead_data[2]
     abof.close()
   
     
@@ -74,58 +72,59 @@ def estimate_sampling_precision():
         bead_precisions[(prot,dom)]=[]
     
     #Earlier very slow code!
-    spe=IMP.optrep.SamplingPrecisionEstimator.SamplingPrecisionEstimator(arg.run_dir,components_to_update) # the components to calculate precision are the 
+    #spe=IMP.optrep.SamplingPrecisionEstimator.SamplingPrecisionEstimator(arg.run_dir,components_to_update) # the components to calculate precision are the 
     ### same as the components to update
         
-    spe.load_coordinates_and_bead_sizes_from_model_files()
+    #spe.load_coordinates_and_bead_sizes_from_model_files()
         
-    spe.estimate_perbead_sampling_precision(grid_size=arg.grid_size)
+    #spe.estimate_perbead_sampling_precision(grid_size=arg.grid_size)
     
-    spe.get_imprecise_beads(xscale=arg.xscale)
+    #spe.get_imprecise_beads(xscale=arg.xscale)
 
-    spe.print_bead_precisions(outfile=arg.output_file)
+    #spe.print_bead_precisions(outfile=arg.output_file)
     
-    ## Set up a Manager to keep track of slaves and our tasks
-    #m = IMP.parallel.Manager()
+    # Set up a Manager to keep track of slaves and our tasks
+    m = IMP.parallel.Manager()
 
-    ## Add slaves  
-    #for i in range(arg.num_cores):
-        
-        #if running_on_cluster():
-            #s = IMP.parallel.SGEQsubSlaveArray()
-        #else:
-            #s = IMP.parallel.LocalSlave()
-        #m.add_slave(s)
-        
-    ## Generate a context (an environment on each slave in which tasks will be
-    ## run). Provide a setup function for this context. 
-    #c = m.get_context(IMP.optrep.parallel_tasks.slave_setup)
+    # Add slaves 
+    if running on cluster():
+        s = IMP.parallel.SGEQsubSlaveArray(arg.num_cores,'-l arch=linux-x64 -q lab.q -l hostname="i*"')
+    
+    else:
+        for i in range(arg.num_cores):
+            s = IMP.parallel.LocalSlave()
+    
+    m.add_slave(s)
 
-    #num_global_beads = IMP.optrep.parallel_tasks.master_setup(arg.components_to_update,arg.run_dir,arg.topology_file)
+    # Generate a context (an environment on each slave in which tasks will be
+    # run). Provide a setup function for this context. 
+    c = m.get_context(IMP.optrep.parallel_tasks.slave_setup)
 
-    ## Add tasks with different input parameters
-    #num_beads_per_core=math.ceil(float(num_global_beads)/float(arg.num_cores))
+    num_global_beads = IMP.optrep.parallel_tasks.master_setup(components_to_update,arg.run_dir,arg.topology_file)
 
-    #start_bead=0
-    #for i in range(arg.num_cores):
+    # Add tasks with different input parameters
+    num_beads_per_core=math.ceil(float(num_global_beads)/float(arg.num_cores))
+
+    start_bead=0
+    for i in range(arg.num_cores):
         ##print start_bead,min(start_bead+num_beads_per_core-1,num_global_beads-1)
         
-        #c.add_task(parallel_tasks.SlaveTask(arg.components_to_update,arg.topology_file,arg.run_dir,arg.grid_size,arg.xscale,start_bead,min(start_bead+num_beads_per_core-1,num_global_beads-1)))
-        #start_bead=start_bead+num_beads_per_core
+        c.add_task(IMP.optrep.parallel_tasks.SlaveTask(components_to_update,arg.topology_file,arg.run_dir,arg.grid_size,arg.xscale,start_bead,min(start_bead+num_beads_per_core-1,num_global_beads-1)))
+        start_bead=start_bead+num_beads_per_core
     
 
-    ## Run all tasks, distributed between the slaves. Get the results in
-    ## the order they are returned (not necessarily the order they were created).
-    #for bead_precision_sublist in c.get_results_unordered():
-        #for bead_string in bead_precision_sublist:
-        #    (prot,dom,bead_index,sampling_precision,is_precise)=bead_string.strip().split()  
-        #    bead_precisions[(prot,dom)].append((int(bead_index),float(sampling_precision),int(is_imprecise)))
-            
-    ## after all the output is obtained in random order, need to sort them by bead and print the new beadmap file.
-    #bead_precisions = sort_beads_by_index(bead_precisions)
+    # Run all tasks, distributed between the slaves. Get the results in
+    # the order they are returned (not necessarily the order they were created).
+    for bead_precision_sublist in c.get_results_unordered():
+        for bead_string in bead_precision_sublist:
+            (prot,dom,bead_index,sampling_precision,is_imprecise)=bead_string.strip().split()  
+            bead_precisions[(prot,dom)].append((int(bead_index),float(sampling_precision),int(is_imprecise)))
+
+    # after all the output is obtained in random order, need to sort them by bead and print the new beadmap file.
+    bead_precisions = sort_beads_by_index(bead_precisions)
     
-    ## outputs 2 files, one with all precisions and one with imprecise beads only, in a format that the BeadMapBuilder can understand
-    #output_precisions_to_file(bead_precisions,arg.beads_output_file) 
+    # outputs 2 files, one with all precisions and one with imprecise beads only, in a format that the BeadMapBuilder can understand
+    output_precisions_to_file(bead_precisions,arg.beads_output_file) 
     
         
  

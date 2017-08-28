@@ -33,6 +33,8 @@ order_components_by_topology_file(input_components_calculate_precision, topology
 // Get the mapping of model index to sample number. 
 get_models_by_sample(gsm_directory+"model_sample_ids.txt");
 
+number_of_global_beads_=0;
+
 }
 
 void SPE::order_components_by_topology_file(const std::vector<std::pair<String, String > > input_components_calculate_precision, const String topology_file) {
@@ -118,7 +120,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
     Assuming same hierarchy for all models of a given sampling run. */
     IMP_NEW(Model, m, ());
     
-    String mdl_0 = models_dir_ + std::to_string(0) + ".rmf3";
+    String mdl_0 = models_dir_ + std::to_string(static_cast<long long>(0)) + ".rmf3";
     
     RMF::FileConstHandle fh_0=RMF::open_rmf_file_read_only(mdl_0);
     
@@ -129,7 +131,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
     for (unsigned int i=0;i<total_number_of_models_;i++) { 
     /* the models in the good_scoring_model dir are called 0.rmf3, 1.rmf3 and so on.. */
                 
-        String mdl_i = models_dir_ + std::to_string(i) + ".rmf3";
+        String mdl_i = models_dir_ + std::to_string(static_cast<long long>(i)) + ".rmf3";
         
         RMF::FileConstHandle fh_i=RMF::open_rmf_file_read_only(mdl_i);
     
@@ -546,7 +548,7 @@ String SPE::get_single_bead_precision_output(const unsigned int global_bead_inde
        unsigned int local_bead_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].second;
 
        char outstring[500];
-        sprintf(outstring,"%s %s %10u %.3f %2d",components_calculate_precision_[prot_index].first.c_str(),components_calculate_precision_[prot_index].second.c_str(), local_bead_index,bead_sampling_precision,int(bead_imprecise));
+        sprintf(outstring,"%s %s %10u %.2f %2d",components_calculate_precision_[prot_index].first.c_str(),components_calculate_precision_[prot_index].second.c_str(), local_bead_index,bead_sampling_precision,int(bead_imprecise));
 
       return(String(outstring));
 

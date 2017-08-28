@@ -29,7 +29,7 @@ class IMPOPTREPEXPORT SPE {
  public:
 /* required for manager in parallel environment to assign tasks. 
   * Also used by some of the mono methods (non-parallel) */
- unsigned int number_of_global_beads_ = 0;
+ unsigned int number_of_global_beads_;
 
  /**
 	\param[in] gsm_directory the directory containing good-scoring models. Should also contain the sample id file, the file containing the sample identity (1 or 2) for each good-scoring model RMF (model_sample_ids.txt)

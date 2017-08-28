@@ -311,7 +311,8 @@ class SamplingPrecisionEstimator(object):
         ''' Check if the sampling precision of the bead is atmost xscale times the bead_diameter.
         If not the bead is imprecise and needs to be coarse-grained.
         '''
-        if bead_precision> xscale*bead_diameter + 2.0 : # not just larger, but significantly larger than the representation precision
+        linear_cutoff =2.0
+        if bead_precision> xscale*bead_diameter + linear_cutoff : # not just larger, but significantly larger than the representation precision
             return False
         return True
               
@@ -347,5 +348,6 @@ class SamplingPrecisionEstimator(object):
 
         for protein_domain_key in self.components_calculate_precision:
             for bead_index in range(len(self.bead_diameter[protein_domain_key])):
+                print bead_index
                 self.bead_precisions[protein_domain_key].append(self.estimate_single_bead_precision(protein_domain_key,bead_index,grid_size))
                 
