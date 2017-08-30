@@ -60,12 +60,14 @@ def set_next_beadmap():
             print "Process converged."
             return
             
-    next_iteration_sampling_dir = "r"+str(args.next_resolution)
+    #next_iteration_sampling_dir = "r"+str(args.next_resolution)
     
-    os.mkdir(next_iteration_sampling_dir)
+    #os.mkdir(next_iteration_sampling_dir)
     
-    #Irrespective of whether we are creating a new bead map or updating an existing one, write the bead map to a file
-    bmb.write_bead_map_to_file(os.path.join(next_iteration_sampling_dir,'bead_map_'+str(args.next_resolution)+'.txt'))
+    ##Irrespective of whether we are creating a new bead map or updating an existing one, write the bead map to a file
+    #bmb.write_bead_map_to_file(os.path.join(next_iteration_sampling_dir,'bead_map_'+str(args.next_resolution)+'.txt'))
+    
+    bmb.write_bead_map_to_file('bead_map_'+str(args.next_resolution)+'.txt')
 
 if __name__ == "__main__" :
     set_next_beadmap()

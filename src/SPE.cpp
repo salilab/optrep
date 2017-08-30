@@ -568,6 +568,18 @@ const Float grid_size, const  Float xscale) const {
 	
 }
 
+void SPE::print_to_file_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
+const Float grid_size, const  Float xscale,String output_file_name) const {
+	
+	FILE* out_file;
+	out_file=fopen(output_file_name.c_str(), "w");
+	
+	for(unsigned int i=start_global_bead_index;i<=end_global_bead_index;i++) {
+
+		fprintf(out_file,"%s\n",(get_single_bead_precision_output(i,grid_size,xscale)).c_str());		
+	}
+	
+}
 
 
 void SPE::get_all_imprecise_beads(const Float xscale) {

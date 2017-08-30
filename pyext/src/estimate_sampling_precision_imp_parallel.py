@@ -84,10 +84,10 @@ def estimate_sampling_precision():
     #spe.print_bead_precisions(outfile=arg.output_file)
     
     # Set up a Manager to keep track of slaves and our tasks
-    m = IMP.parallel.Manager()
+    m = IMP.parallel.Manager(python="module load sali-libraries; module load openmpi-1.6-nodlopen; ~/imp-clean/build/setup_environment.sh python",host="172.18.1.209")
 
     # Add slaves 
-    if running on cluster():
+    if running_on_cluster():
         s = IMP.parallel.SGEQsubSlaveArray(arg.num_cores,'-l arch=linux-x64 -q lab.q -l hostname="i*"')
     
     else:

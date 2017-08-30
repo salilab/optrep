@@ -56,6 +56,9 @@ String get_single_bead_precision_output(const unsigned int global_bead_index,con
 
 Strings print_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
 const Float grid_size, const  Float xscale) const;
+
+void print_to_file_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
+const Float grid_size, const  Float xscale,String output_file_name) const;
 	
 /*end API for parallel code*/
 
