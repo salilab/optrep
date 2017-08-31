@@ -41,14 +41,12 @@ def parse_config_file(config_file):
                 fields[1]=os.path.expanduser('~')+fields[1].lstrip('~') #os.path.join did not work here for some weird reason!
       
             configs_dict[fields[0]]=fields[1] # just a single key to string map
-     
-        #print fields[0]
-            
+
     cf.close()    
     
     return configs_dict
 
-def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp_dir,sampling_script,cores_per_run,topo_file,bead_map_file,move_sizes_file,xlinks_file,xlink_avg_distance):
+def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp_dir,sampling_script,cores_per_run,steps_per_run,topo_file,bead_map_file,move_sizes_file,xlinks_file,xlink_avg_distance):
 
     qsf = open("job_sample.sh","w")
     print >>qsf,"#$ -S /bin/bash"
@@ -69,7 +67,7 @@ def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp
 
     print >>qsf,"date"
     
-    print >>qsf,"mpirun -np "+cores_per_run+" "+imp_dir+"/build/setup_environment.sh python "+sampling_script+" "+bio_system+" "+topo_file+" "+bead_map_file+" "+move_sizes_file+" "+xlinks_file+" "+xlink_avg_distance+" prod"
+    print >>qsf,"mpirun -np "+cores_per_run+" "+imp_dir+"/build/setup_environment.sh python "+sampling_script+" "+bio_system+" "+topo_file+" "+bead_map_file+" "+move_sizes_file+" "+xlinks_file+" "+xlink_avg_distance+" "+steps_per_run
     print >>qsf,"date"
     
     qsf.close()
@@ -96,7 +94,7 @@ def create_precision_qsub_script(bio_system,expt_number,resolution,imp_dir,num_c
     # zero-based numbering
     print >>qsf,"j=$(( $SGE_TASK_ID - 1 ))"
     
-    print >>qsf,imp_dir+"/build/setup_environment.sh python "+imp_dir+"/imp/modules/pyext/src/estimate_sampling_precision.py -n "+num_cores+" -cn $j -pl "+proteins_list+" -dl "+domains_list+" -rd ./ -tf "+topo_file+" -gs "+grid_size+" -xs "+xscale+" -o "+output_prefix
+    print >>qsf,imp_dir+"/build/setup_environment.sh python "+imp_dir+"/imp/modules/optrep/pyext/src/estimate_sampling_precision.py -n "+num_cores+" -cn $j -pl "+proteins_list+" -dl "+domains_list+" -rd ./ -tf "+topo_file+" -gs "+grid_size+" -xs "+xscale+" -o "+output_prefix
         
     qsf.close()
     
@@ -124,8 +122,7 @@ def check_if_jobs_done(job_id_list):
     return done
 
 def all_beads_precise(bead_precisions_file):
-    
-      
+          
     bpf=open(bead_precisions_file,'r')
     
     for ln in bpf.readlines():
@@ -193,20 +190,22 @@ def incremental_coarse_grain():
             os.chdir(curr_sampling_dir)
                 
             # create the new sampling script
-            create_sampling_qsub_script(arg.system,arg.experiment,resolution,irun,config_params["IMP_DIR"],config_params["SAMPLING_SCRIPT"],config_params["NUM_CORES_PER_SAMPLING_RUN"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"../bead_map_"+resolution+".txt",os.path.join(config_params["INPUT_DIR"],config_params["MOVE_SIZES_FILE"]),os.path.join(config_params["INPUT_DIR"],config_params["XLINKS_FILE"]),config_params["XLINK_AVG_DISTANCE"])
+            create_sampling_qsub_script(arg.system,arg.experiment,resolution,irun,config_params["IMP_DIR"],config_params["SAMPLING_SCRIPT"],config_params["NUM_CORES_PER_SAMPLING_RUN"],config_params["NUM_STEPS_PER_SAMPLING_RUN"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"../bead_map_"+resolution+".txt",os.path.join(config_params["INPUT_DIR"],config_params["MOVE_SIZES_FILE"]),os.path.join(config_params["INPUT_DIR"],config_params["XLINKS_FILE"]),config_params["XLINK_AVG_DISTANCE"])
             
             # run qsub script 
             print "Launching sampling run ",irun
-            launch_process = subprocess.Popen(["qsub","job_sample.sh"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            launch_out,launch_err = launch_process.communicate()
+            sample_process = subprocess.Popen(["qsub","job_sample.sh"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            sample_out,sample_err = sample_process.communicate()
             
-            if launch_process.returncode!=0: 
-                print launch_err
+            if sample_process.returncode!=0: 
+                print sample_err
                 print "Problems launching sampling run ",irun," in  resolution ",resolution," for system ",arg.system
                 exit(1)
         
             submitted_job_id = get_job_id_from_command_output(launch_out)  # get the job ID from the qsub command output
             sampling_job_ids.append(submitted_job_id) 
+            
+            print submitted_job_id
         
             os.chdir(os.path.join(parent_dir,curr_resolution_dir))
     
@@ -215,8 +214,10 @@ def incremental_coarse_grain():
         
         while not sampling_done:
             
-            # sleep for 10 minutes
-            time.sleep(600)
+            print "Going back to sleep for 5 mins"
+            
+            # sleep for 5 minutes
+            time.sleep(300)
             
             # try your luck again
             sampling_done = check_if_jobs_done(sampling_job_ids)
@@ -236,25 +237,25 @@ def incremental_coarse_grain():
     
         # run qsub script 
         print "Launching precision run"
-        launch_process = subprocess.Popen(["qsub","job_precision.sh"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        launch_out,launch_err = launch_process.communicate()
+        precision_process = subprocess.Popen(["qsub","job_precision.sh"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        precision_out,precision_err = precision_process.communicate()
         
-        if launch_process.returncode!=0: 
-            print launch_err
+        if precision_process.returncode!=0: 
+            print precision_err
             print "Problems launching precision run  in  resolution ",resolution," for system ",arg.system
             exit(1)
     
         precision_job_ids=[]
-        submitted_job_id = get_job_id_from_command_output(launch_out)  # get the job ID from the qsub command output
+        submitted_job_id = get_job_id_from_command_output(precision_out)  # get the job ID from the qsub command output
         precision_job_ids.append(submitted_job_id) 
-     
+        print precision_job_ids 
      
         # Step 4.5 Wait for the jobs to be done
         precision_done = check_if_jobs_done(precision_job_ids)
       
         while not precision_done:
-            # sleep for 10 minutes
-            time.sleep(600)
+            # sleep for 5 minutes
+            time.sleep(300)
             
             precision_done = check_if_jobs_done(precision_job_ids)
                   
