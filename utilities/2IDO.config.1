@@ -1,0 +1,48 @@
+# Directory used for running all scripts etc
+IMP_DIR=~/imp-clean/
+SAMPLING_SCRIPT=~/optrep/code/scripts/sample/sample_rigid_to_snake.py
+
+# all input files are store here.
+INPUT_DIR=~/optrep/input/2IDO/
+# information about the system
+TOPOLOGY_FILE=2IDO_B_rigid_A_snake_topology.txt
+
+# sampling amount
+NUM_SAMPLING_RUNS=30
+NUM_CORES_PER_SAMPLING_RUN=4
+NUM_STEPS_PER_SAMPLING_RUN=3000
+
+# number of cores for estimating precision
+NUM_CORES_ESTIMATE_PRECISION=4
+
+# input data and parameters for the scoring function
+XLINK_AVG_DISTANCE=8.0 
+XLINKS_FILE=2IDO.xlinks.1
+
+# good scoring model criteria. Could have structured this differently.
+# With first criterion and all of its parameters, then next criterion, and so on..
+#
+# Note always separate multiple list members by space
+# e.g. 
+# GOOD_SCORING_MODEL_CRITERIA_LIST=Crosslinks EM FRET
+# GOOD_SCORING_MODEL_MEMBER_UPPER_THRESHOLDS_LIST=987.0 100.0 123.0
+GOOD_SCORING_MODEL_CRITERIA_LIST=Crosslinks
+GOOD_SCORING_MODEL_KEYWORD_LIST=CrossLinkingMassSpectrometryRestraint_Distance_
+
+GOOD_SCORING_MODEL_AGGREGATE_UPPER_THRESHOLDS_LIST=1.0
+GOOD_SCORING_MODEL_AGGREGATE_LOWER_THRESHOLDS_LIST=0.9
+
+GOOD_SCORING_MODEL_MEMBER_UPPER_THRESHOLDS_LIST=12.0
+GOOD_SCORING_MODEL_MEMBER_LOWER_THRESHOLDS_LIST=0.0
+
+# which parts of the system to optimize for
+PROTEINS_TO_OPTIMIZE_LIST=A
+DOMAINS_TO_OPTIMIZE_LIST=A_1
+
+# which resolutions to use. Move sizes for some or all of these resolutions.
+RESOLUTIONS_LIST=1 5 10 20 30
+MOVE_SIZES_FILE=2IDO.move_sizes.1 
+
+# Parameters of the representation optimizer
+XSCALE=1.0
+GRID_SIZE=2.0

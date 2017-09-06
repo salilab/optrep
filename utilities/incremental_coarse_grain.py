@@ -64,7 +64,7 @@ def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp
     print >>qsf,"#$ -l hostname='i*'"
     print >>qsf,"module load openmpi-1.6-nodlopen"
     print >>qsf,"module load sali-libraries"
-
+    print >>qsf, "hostname" 
     print >>qsf,"date"
     
     print >>qsf,"mpirun -np "+cores_per_run+" "+imp_dir+"/build/setup_environment.sh python "+sampling_script+" "+bio_system+" "+topo_file+" "+bead_map_file+" "+move_sizes_file+" "+xlinks_file+" "+xlink_avg_distance+" "+steps_per_run
@@ -98,10 +98,9 @@ def create_precision_qsub_script(bio_system,expt_number,resolution,imp_dir,num_c
         
     qsf.close()
     
-
 def get_job_id_from_command_output(stdout):
     
-    return stdout.strip().split()[2]
+    return stdout.strip().split()[2].split('.')[0]
 
 def check_if_jobs_done(job_id_list):
     
@@ -196,17 +195,15 @@ def incremental_coarse_grain():
             print "Launching sampling run ",irun
             sample_process = subprocess.Popen(["qsub","job_sample.sh"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             sample_out,sample_err = sample_process.communicate()
-            
+                        
             if sample_process.returncode!=0: 
                 print sample_err
                 print "Problems launching sampling run ",irun," in  resolution ",resolution," for system ",arg.system
                 exit(1)
         
-            submitted_job_id = get_job_id_from_command_output(launch_out)  # get the job ID from the qsub command output
+            submitted_job_id = get_job_id_from_command_output(sample_out)  # get the job ID from the qsub command output
             sampling_job_ids.append(submitted_job_id) 
-            
-            print submitted_job_id
-        
+      
             os.chdir(os.path.join(parent_dir,curr_resolution_dir))
     
         # Step 2.5 Wait for sampling to be done
@@ -217,7 +214,7 @@ def incremental_coarse_grain():
             print "Going back to sleep for 5 mins"
             
             # sleep for 5 minutes
-            time.sleep(300)
+            time.sleep(60)
             
             # try your luck again
             sampling_done = check_if_jobs_done(sampling_job_ids)
@@ -248,14 +245,13 @@ def incremental_coarse_grain():
         precision_job_ids=[]
         submitted_job_id = get_job_id_from_command_output(precision_out)  # get the job ID from the qsub command output
         precision_job_ids.append(submitted_job_id) 
-        print precision_job_ids 
-     
+    
         # Step 4.5 Wait for the jobs to be done
         precision_done = check_if_jobs_done(precision_job_ids)
       
         while not precision_done:
             # sleep for 5 minutes
-            time.sleep(300)
+            time.sleep(60)
             
             precision_done = check_if_jobs_done(precision_job_ids)
                   
@@ -269,14 +265,14 @@ def incremental_coarse_grain():
         if not ret==0:
             print "Problems collating precisions in resolution ",resolution," for system ",arg.system
             exit(1)
-          
-        os.chdir(parent_dir) # do a cd ../
         
         # Step 6. Check if done (all beads are precise)
         all_done = all_beads_precise(bead_precisions_file)           
        
         if all_done:
             break
+        
+        os.chdir(parent_dir) # do a cd ../
       
  
 if __name__ == "__main__" :
