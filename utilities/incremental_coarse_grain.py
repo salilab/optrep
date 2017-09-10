@@ -1,7 +1,9 @@
+import sys
+sys.dont_write_bytecode=True
 
 import IMP
 import IMP.optrep
-import os,sys,string,math
+import os,string,math
 import argparse
 import subprocess
 import time

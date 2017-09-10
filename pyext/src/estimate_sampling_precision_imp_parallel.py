@@ -14,7 +14,7 @@ def running_on_cluster():
 
 def parse_args():
     
-    parser = argparse.ArgumentParser(description="Get the sampling precision per bead and identify imprecise beads. Usage: estimate_sampling_precision.py -n <number of cores> -pl <protein list: e.g. A B> (Number of elements in protein and domain lists should match.)  -dl <domain list: e.g. A_1 B_1> -rd <run_directory_for_sampling> -tf <topology_file> -gs <grid_size> -xs <xscale> -ao <all beads precisions file> -io <imprecise bead precisions file>. Flag -h for more details.")
+    parser = argparse.ArgumentParser(description="Get the sampling precision per bead and identify imprecise beads. Usage: estimate_sampling_precision.py -n <number of cores> -pl <protein list: e.g. A B> (Number of elements in protein and domain lists should match.)  -dl <domain list: e.g. A_1 B_1> -rd <run_directory_for_sampling> -tf <topology_file> -gs <grid_size> -xs <xscale> -o <bead precisions file>. Flag -h for more details.")
     
     
     parser.add_argument("-n","--num_cores",dest="num_cores",type=int,help="number of cores to run on")
@@ -84,7 +84,9 @@ def estimate_sampling_precision():
     #spe.print_bead_precisions(outfile=arg.output_file)
     
     # Set up a Manager to keep track of slaves and our tasks
-    m = IMP.parallel.Manager(python="module load sali-libraries; module load openmpi-1.6-nodlopen; ~/imp-clean/build/setup_environment.sh python",host="172.18.1.209")
+    m = IMP.parallel.Manager()
+
+    #m = IMP.parallel.Manager(python="module load sali-libraries; module load openmpi-1.6-nodlopen; ~/imp-clean/build/setup_environment.sh python",host="172.18.1.209")
 
     # Add slaves 
     if running_on_cluster():
