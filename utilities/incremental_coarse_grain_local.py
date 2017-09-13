@@ -159,7 +159,7 @@ def incremental_coarse_grain():
         
         ret = subprocess.call([os.path.join(config_params["IMP_DIR"],"build","setup_environment.sh"),"python",os.path.join(config_params["IMP_DIR"],
         "imp/modules/optrep/pyext/src/estimate_sampling_precision_imp_parallel.py"),"-n",config_params["NUM_CORES_ESTIMATE_PRECISION"],"-pl",config_params["PROTEINS_TO_OPTIMIZE_LIST"],"-dl",config_params["DOMAINS_TO_OPTIMIZE_LIST"],
-        "-rd","./","-tf",os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"-gs",config_params["GRID_SIZE"],"-xs",config_params["XSCALE"],"-o","../"+bead_precisions_file])
+        "-rd","./","-tf",os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"-gs",config_params["GRID_SIZE"],"-xs",config_params["XSCALE"],"-lc",config_params["LINEAR_CUTOFF"],"-o","../"+bead_precisions_file])
                
         if not ret==0:
             print "Problems getting bead-precisions in resolution ",resolution," for system ",arg.system
