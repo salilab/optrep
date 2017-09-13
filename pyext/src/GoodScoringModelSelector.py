@@ -2,6 +2,7 @@
 import IMP
 import IMP.atom
 import IMP.rmf
+import subprocess
 from subprocess import Popen
 import os,sys,string,math
 import shutil
@@ -76,7 +77,12 @@ class GoodScoringModelSelector(object):
 
             slice_location=os.path.join(os.environ['IMP_BIN_DIR'],'rmf_slice')
             
-            rmf_slice=Popen([slice_location,trajfile,"-f",str(frameid),os.path.join(output_dir,str(i)+'.rmf3')])
+            #rmf_slice=Popen([slice_location,trajfile,"-f",str(frameid),os.path.join(output_dir,str(i)+'.rmf3')])
+            #out,err=rmf_slice.communicate()
+            
+            rmf_slice = subprocess.call([slice_location,trajfile,"-f",str(frameid),os.path.join(output_dir,str(i)+'.rmf3')])
+            
+            
 
     def get_good_scoring_models(self,criteria_list=[],keywords_list=[],aggregate_lower_thresholds=[],
                                         aggregate_upper_thresholds=[],member_lower_thresholds=[],member_upper_thresholds=[]): 

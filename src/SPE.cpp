@@ -582,14 +582,14 @@ const Float grid_size, const  Float xscale,const Float linear_cutoff, String out
 }
 
 
-void SPE::get_all_imprecise_beads(const Float xscale) {
+void SPE::get_all_imprecise_beads(const Float xscale, const Float linear_cutoff) {
     // For each bead check if its size is commensurate with the sampling precision.
     // If not, mark it as imprecise. 
     //@param xscale used to define imprecise bead. imprecise bead has sampling_precision > xscale*bead_radius.
     //
 
 	for(unsigned int global_bead_index=0;global_bead_index < number_of_global_beads_;global_bead_index++) {  
-        if (!is_commensurate(bead_diameter_[global_bead_index],bead_precisions_[global_bead_index],xscale)) {
+        if (!is_commensurate(bead_diameter_[global_bead_index],bead_precisions_[global_bead_index],xscale, linear_cutoff)) {
         	bead_imprecise_.push_back(true); 
         }
             

@@ -44,7 +44,7 @@ void load_coordinates_and_bead_sizes_from_model_files(bool break_after_first_mod
 /* this was for mono (unparallellized) code. Runningall ona a single core */ 
 void estimate_all_beads_sampling_precision(const Float grid_size=1.0);
 
-void get_all_imprecise_beads(const Float xscale);
+void get_all_imprecise_beads(const Float xscale,const Float linear_cutoff);
 
 void print_all_bead_precisions(const std::string out_file_name) const ;
 
