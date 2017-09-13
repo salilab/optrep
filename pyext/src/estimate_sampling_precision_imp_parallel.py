@@ -29,7 +29,9 @@ def parse_args():
     
     parser.add_argument("-gs","--grid_size",dest="grid_size",type=float,help="Size of grid for clustering and determining sampling precision") 
     
-    parser.add_argument("-xs","--xscale",dest="xscale",type=float,help="Sampling precision can be utmost xscale times the representation precision plus 2.0") 
+    parser.add_argument("-xs","--xscale",dest="xscale",type=float,help="Sampling precision can be utmost xscale times the representation precision plus linear cutoff") 
+    
+    parser.add_argument("-lc","--linear_cutoff",dest="linear_cutoff",type=float,help="Sampling precision can be utmost xscale times the representation precision plus linear cutoff")
     
     parser.add_argument("-o","--beads_outfile",dest="beads_output_file",help="File where precision values of all beads is written")
     
@@ -111,7 +113,7 @@ def estimate_sampling_precision():
     for i in range(arg.num_cores):
         ##print start_bead,min(start_bead+num_beads_per_core-1,num_global_beads-1)
         
-        c.add_task(IMP.optrep.parallel_tasks.SlaveTask(components_to_update,arg.topology_file,arg.run_dir,arg.grid_size,arg.xscale,start_bead,min(start_bead+num_beads_per_core-1,num_global_beads-1)))
+        c.add_task(IMP.optrep.parallel_tasks.SlaveTask(components_to_update,arg.topology_file,arg.run_dir,arg.grid_size,arg.xscale,arg.linear_cutoff,start_bead,min(start_bead+num_beads_per_core-1,num_global_beads-1)))
         start_bead=start_bead+num_beads_per_core
     
 

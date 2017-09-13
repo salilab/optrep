@@ -1,8 +1,10 @@
+import sys
+sys.dont_write_bytecode=True
 
 import IMP
 import IMP.optrep
 #import IMP.optrep.SamplingPrecisionEstimator
-import os,sys,string,math
+import os,string,math
 import argparse
 
 def parse_args():
@@ -23,7 +25,9 @@ def parse_args():
     
     parser.add_argument("-gs","--grid_size",dest="grid_size",type=float,help="Size of grid for clustering and determining sampling precision") 
     
-    parser.add_argument("-xs","--xscale",dest="xscale",type=float,help="Sampling precision can be utmost xscale times the representation precision plus 2.0") 
+    parser.add_argument("-xs","--xscale",dest="xscale",type=float,help="Sampling precision can be utmost xscale times the representation precision plus linear cutoff") 
+    parser.add_argument("-lc","--linear_cutoff",dest="linear_cutoff",type=float,help="Sampling precision can be utmost xscale times the representation precision plus linear cutoff")
+     
     
     parser.add_argument("-o","--outfile_prefix",dest="output_file_prefix",help="Prefix of file where precision values of all beads is written")
     
@@ -76,7 +80,7 @@ def estimate_sampling_precision():
     spe.load_coordinates_and_bead_sizes_from_model_files()
         
     spe.print_to_file_precision_for_range_of_beads(start_bead, end_bead,
-    arg.grid_size, arg.xscale,arg.output_file_prefix+"."+str(arg.core_number))
+    arg.grid_size, arg.xscale,arg.linear_cutoff,arg.output_file_prefix+"."+str(arg.core_number))
        
  
 if __name__ == "__main__" :

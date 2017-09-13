@@ -77,7 +77,7 @@ def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp
     
     qsf.close()
 
-def create_precision_qsub_script(bio_system,expt_number,resolution,imp_dir,num_cores,proteins_list,domains_list,topo_file,xscale,grid_size,output_prefix):
+def create_precision_qsub_script(bio_system,expt_number,resolution,imp_dir,num_cores,proteins_list,domains_list,topo_file,xscale,linear_cutoff,grid_size,output_prefix):
     
     qsf = open("job_precision.sh","w")
     print >>qsf,"#$ -S /bin/bash"
@@ -100,7 +100,7 @@ def create_precision_qsub_script(bio_system,expt_number,resolution,imp_dir,num_c
     print >>qsf,"j=$(( $SGE_TASK_ID - 1 ))"
    
     print >>qsf,"export PYTHONDONTWRITEBYTECODE=1" 
-    print >>qsf,imp_dir+"/build/setup_environment.sh python -B "+imp_dir+"/imp/modules/optrep/pyext/src/estimate_sampling_precision.py -n "+num_cores+" -cn $j -pl "+proteins_list+" -dl "+domains_list+" -rd ./ -tf "+topo_file+" -gs "+grid_size+" -xs "+xscale+" -o "+output_prefix
+    print >>qsf,imp_dir+"/build/setup_environment.sh python -B "+imp_dir+"/imp/modules/optrep/pyext/src/estimate_sampling_precision.py -n "+num_cores+" -cn $j -pl "+proteins_list+" -dl "+domains_list+" -rd ./ -tf "+topo_file+" -gs "+grid_size+" -xs "+xscale+" -lc "+linear_cutoff+" -o "+output_prefix
         
     qsf.close()
     
@@ -236,7 +236,7 @@ def incremental_coarse_grain():
         # Step 4. Get sampling precision of all beads
         os.chdir("good_scoring_models")
      
-        create_precision_qsub_script(arg.system,arg.experiment,resolution,config_params["IMP_DIR"],config_params["NUM_CORES_ESTIMATE_PRECISION"],config_params["PROTEINS_TO_OPTIMIZE_LIST"],config_params["DOMAINS_TO_OPTIMIZE_LIST"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),config_params["XSCALE"],config_params["GRID_SIZE"],"../bead_precisions_sub")
+        create_precision_qsub_script(arg.system,arg.experiment,resolution,config_params["IMP_DIR"],config_params["NUM_CORES_ESTIMATE_PRECISION"],config_params["PROTEINS_TO_OPTIMIZE_LIST"],config_params["DOMAINS_TO_OPTIMIZE_LIST"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),config_params["XSCALE"],config_params["LINEAR_CUTOFF"],config_params["GRID_SIZE"],"../bead_precisions_sub")
     
         # run qsub script 
         print "Launching precision run"

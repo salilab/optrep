@@ -51,14 +51,14 @@ void print_all_bead_precisions(const std::string out_file_name) const ;
 /*end API for mono code*/
 
 /* this is for parallellized code. 1 core per bead. */
-String get_single_bead_precision_output(const unsigned int global_bead_index,const Float grid_size=1.0, const  Float xscale=1.0) const;
+String get_single_bead_precision_output(const unsigned int global_bead_index,const Float grid_size=1.0, const  Float xscale=1.0, const Float linear_cutoff=2.0) const;
 /* designed return value as a string, as python is capable of parsing it. It could have been an object or an IMP_NAED_TUPLE_3 though */
 
 Strings print_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
-const Float grid_size, const  Float xscale) const;
+const Float grid_size, const  Float xscale, const Float linear_cutoff) const;
 
 void print_to_file_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
-const Float grid_size, const  Float xscale,String output_file_name) const;
+const Float grid_size, const  Float xscale,const Float linear_cutoff,String output_file_name) const;
 	
 /*end API for parallel code*/
 
@@ -118,7 +118,7 @@ IMP::optrep::ChiSquareTestResult* test_sampling_exhaustiveness(const IMP::algebr
 
 Float estimate_single_bead_precision(const unsigned int global_bead_index,const Float grid_size) const ;
 
-bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const ;
+bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale,const Float linear_cutoff) const ;
 
 
 //IMP_OBJECT_METHODS(SPE);

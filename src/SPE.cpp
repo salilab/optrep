@@ -525,21 +525,21 @@ Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,c
 	
 }
 
-bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale) const {
+bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale, const Float linear_cutoff) const {
     /* Check if the sampling precision of the bead is atmost xscale times the bead_diameter.
     If not the bead is imprecise and needs to be coarse-grained.
     */
-    if (bead_precision> xscale*bead_diameter + 2.0) { //not just larger, but significantly larger than the representation precision
+    if (bead_precision> xscale*bead_diameter + linear_cutoff) { //not just larger, but significantly larger than the representation precision
         return false;
     } 
     return true;
 }
 
-String SPE::get_single_bead_precision_output(const unsigned int global_bead_index,const Float grid_size, const  Float xscale) const {
+String SPE::get_single_bead_precision_output(const unsigned int global_bead_index,const Float grid_size, const  Float xscale, const Float linear_cutoff) const {
 	Float bead_sampling_precision = estimate_single_bead_precision(global_bead_index,grid_size);
 
 	Float bead_imprecise = true;
-	if (is_commensurate(bead_diameter_[global_bead_index],bead_sampling_precision,xscale)) {
+	if (is_commensurate(bead_diameter_[global_bead_index],bead_sampling_precision,xscale, linear_cutoff)) {
                 bead_imprecise = false;
         }
 
@@ -555,12 +555,12 @@ String SPE::get_single_bead_precision_output(const unsigned int global_bead_inde
 }
 
 Strings SPE::print_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
-const Float grid_size, const  Float xscale) const {
+const Float grid_size, const  Float xscale, const Float linear_cutoff) const {
 	
 	Strings result;
 	
 	for(unsigned int i=start_global_bead_index;i<=end_global_bead_index;i++) {
-		result.push_back(get_single_bead_precision_output(i,grid_size,xscale));
+		result.push_back(get_single_bead_precision_output(i,grid_size,xscale, linear_cutoff));
 		
 	}
 	
@@ -569,14 +569,14 @@ const Float grid_size, const  Float xscale) const {
 }
 
 void SPE::print_to_file_precision_for_range_of_beads(const unsigned int start_global_bead_index, const unsigned int end_global_bead_index,
-const Float grid_size, const  Float xscale,String output_file_name) const {
+const Float grid_size, const  Float xscale,const Float linear_cutoff, String output_file_name) const {
 	
 	FILE* out_file;
 	out_file=fopen(output_file_name.c_str(), "w");
 	
 	for(unsigned int i=start_global_bead_index;i<=end_global_bead_index;i++) {
 
-		fprintf(out_file,"%s\n",(get_single_bead_precision_output(i,grid_size,xscale)).c_str());		
+		fprintf(out_file,"%s\n",(get_single_bead_precision_output(i,grid_size,xscale, linear_cutoff)).c_str());		
 	}
 	
 }

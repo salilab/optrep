@@ -31,13 +31,14 @@ def master_setup(components_to_update,run_dir,topology_file):
 
 class SlaveTask(object):
 
-    def __init__(self,components_to_update,topology_file,run_dir,grid_size, xscale,start_bead_index,end_bead_index):
+    def __init__(self,components_to_update,topology_file,run_dir,grid_size, xscale,linear_cutoff,start_bead_index,end_bead_index):
    
         self.components_to_update=components_to_update 
         self.topology_file=topology_file
         self.run_dir=run_dir
         self.grid_size = grid_size
         self.xscale=xscale
+        self.linear_cutoff=linear_cutoff
         self.start_bead_index=start_bead_index
         self.end_bead_index=end_bead_index
      
@@ -59,7 +60,7 @@ class SlaveTask(object):
         spe.load_coordinates_and_bead_sizes_from_model_files()
         
         bead_precision_output_list = spe.print_precision_for_range_of_beads(self.start_bead_index, self.end_bead_index,
-self.grid_size, self.xscale)
+self.grid_size, self.xscale,self.linear_cutoff)
                         
         return(bead_precision_output_list)
      
