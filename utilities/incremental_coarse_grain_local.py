@@ -149,15 +149,11 @@ def incremental_coarse_grain():
                 os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"../bead_map_"+resolution+".txt",os.path.join(config_params["INPUT_DIR"],config_params["MOVE_SIZES_FILE"]),os.path.join(config_params["INPUT_DIR"],config_params["XLINKS_FILE"])
                 , config_params["XLINK_AVG_DISTANCE"],config_params["NUM_STEPS_PER_SAMPLING_RUN"]])
                     
-                   num_lines_sampling_file = int(subprocess.check_output(['wc','-l','output/stat_replica.0.out']).strip().split()[0])
+                   num_lines_sampling_file = int(subprocess.check_output(['wc','-l','output/stat_replica.0.out']).strip().split()[0]) 
 
                    if num_lines_sampling_file == int(config_params["NUM_STEPS_PER_SAMPLING_RUN"])+1:
-                        print "sampling successful"
-                        sampling_sucess=True
-
-                   else:
-                        break 
-
+                        sampling_success=True
+             
                    time_end = datetime.datetime.now()  #.strftime("%m/%d/%Y_%H:%M:%S")
                 
                 time_diff=time_end-time_start
