@@ -348,6 +348,5 @@ class SamplingPrecisionEstimator(object):
 
         for protein_domain_key in self.components_calculate_precision:
             for bead_index in range(len(self.bead_diameter[protein_domain_key])):
-                print bead_index
                 self.bead_precisions[protein_domain_key].append(self.estimate_single_bead_precision(protein_domain_key,bead_index,grid_size))
                 

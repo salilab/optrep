@@ -128,15 +128,18 @@ def check_if_jobs_done(job_id_list):
     
     return done
 
-def all_beads_precise(bead_precisions_file):
+def no_consecutive_beads_imprecise(bead_precisions_file):
           
     bpf=open(bead_precisions_file,'r')
+        
+    bead_imprecisions=[int(ln.strip().split()[4]) for ln in bpf.readlines()]
+            
+    bpf.close()
     
-    for ln in bpf.readlines():
-        imprecise=int(ln.strip().split()[4])
-        if imprecise==1:
+    for i in range(len(bead_imprecisions)-1):
+        if bead_imprecisions[i]==1 and bead_imprecisions[i+1]==1:
             return False
-         
+    
     return True
     
             
@@ -307,7 +310,7 @@ def incremental_coarse_grain():
                 exit(1)
         
         # Step 6. Check if done (all beads are precise)
-        all_done = all_beads_precise(bead_precisions_file)           
+        all_done = no_consecutive_beads_imprecise(bead_precisions_file)            
        
         if all_done:
             break
