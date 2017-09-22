@@ -1,0 +1,2 @@
+B B_1 2IDO_B 11 76 2IDO.pdb B 1 blue
+A A_1 2IDO_A 7 180 - A bm red
