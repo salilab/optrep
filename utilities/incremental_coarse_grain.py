@@ -153,9 +153,6 @@ def incremental_coarse_grain():
     
     config_params = parse_config_file(config_file)
     
-    starting_resolution = arg.restart.split('-')[0]
-    starting_stage = arg.restart.split('-')[1]
-    correctly_restarted = False # start from the correct previously left off stage
     
     if arg.restart=="0":
         correctly_restarted = True
@@ -174,6 +171,7 @@ def incremental_coarse_grain():
         curr_resolution_dir = "r"+resolution
         
         if not correctly_restarted and int(starting_resolution) > int(resolution):
+            print "skipping resolution",resolution
             continue
                 
         if (not correctly_restarted and starting_stage=="b") or correctly_restarted : 
