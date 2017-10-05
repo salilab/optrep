@@ -36,10 +36,12 @@ def add_representation(state,input_dir,fasta_file,topology_file,bead_map_file):
         # if structure exists for this domain, add it
         if pdb!="-":
             atomic = curr_mol.add_structure(os.path.join(input_dir,pdb),chain_id=chain,res_range=(int(startres_domain),int(endres_domain)+1))
+        
+        if resolution!="bm":
             curr_mol.add_representation(atomic,resolutions=[int(resolution)],color=clr)
             
         # else add the representation from bead map 
-        elif pdb=="-" and resolution=="bm":
+        else:
             
             for bead in bead_map[(protein,domain)]:
                 startres_bead=bead[0] 
@@ -52,8 +54,6 @@ def add_representation(state,input_dir,fasta_file,topology_file,bead_map_file):
                 
                 curr_mol.add_representation(curr_mol[startres_bead-1:endres_bead],resolutions=[endres_bead-startres_bead+1],color=clr) #TODO not considered multi-scaling yet
                 #TODO not considering missing residues in PDB here
-        
-        # TODO not yet considered with structure and CG beads
- 
+     
     return mols
     

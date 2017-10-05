@@ -7,6 +7,7 @@ import os,string,math
 import argparse
 import subprocess
 import time
+import stats_helper
 
 def parse_args():
     
@@ -22,35 +23,7 @@ def parse_args():
  
     return result
 
-
-def parse_config_file(config_file):
-    
-    cf=open(config_file,'r')
-    
-    configs_dict ={}
-    
-    for ln in cf.readlines():
-    
-        if ln.startswith("#") or not ln.strip(): # ignore comment and blank lines
-            continue
-        
-        fields=ln.strip().split("=")
-        
-        if fields[0]=="RESOLUTIONS_LIST":
-            configs_dict[fields[0]]=fields[1].split() # key to list map
-            
-        else :
-            if fields[1].startswith('~'): # location of a file or directory
-     
-                fields[1]=os.path.expanduser('~')+fields[1].lstrip('~') #os.path.join did not work here for some weird reason!
-      
-            configs_dict[fields[0]]=fields[1] # just a single key to string map
-
-    cf.close()    
-    
-    return configs_dict
-
-def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp_dir,sampling_script,cores_per_run,steps_per_run,topo_file,bead_map_file,move_sizes_file,xlinks_file,xlink_avg_distance):
+def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp_dir,sampling_script,cores_per_run,steps_per_run,topo_file,bead_map_file,move_sizes_file,xlinks_file,xlink_avg_distance,ligand_max_trans,ev_weight):
 
     qsf = open("job_sample.sh","w")
     print >>qsf,"#$ -S /bin/bash"
@@ -66,14 +39,15 @@ def create_sampling_qsub_script(bio_system,expt_number,resolution,run_number,imp
     print >>qsf,"#$ -cwd"
     print >>qsf,"#$ -pe ompi "+cores_per_run
     print >>qsf,"#$ -l hostname='i*'"
+    #print >>qsf,"#$ -q lab.q"
     print >>qsf,"module load openmpi-1.6-nodlopen"
     print >>qsf,"module load sali-libraries"
     print >>qsf, "hostname" 
     print >>qsf,"datetime=`date +%x_%T`"
     print >>qsf,"echo Datetime:$datetime"
     print >>qsf,"export PYTHONDONTWRITEBYTECODE=1" 
-    print >>qsf,"mpirun -np "+cores_per_run+" "+imp_dir+"/build/setup_environment.sh python -B "+sampling_script+" "+bio_system+" "+topo_file+" "+bead_map_file+" "+move_sizes_file+" "+xlinks_file+" "+xlink_avg_distance+" "+steps_per_run
-    
+    print >>qsf,"mpirun -np "+cores_per_run+" "+imp_dir+"/build/setup_environment.sh python -B "+sampling_script+" "+bio_system+" "+topo_file+" "+bead_map_file+" "+move_sizes_file+" "+xlinks_file+" "+xlink_avg_distance+" "+steps_per_run+" "+ligand_max_trans+" "+ev_weight
+        
     print >>qsf,"datetime=`date +%x_%T`"
     print >>qsf,"echo Datetime:$datetime"
     
@@ -95,6 +69,7 @@ def create_precision_qsub_script(bio_system,expt_number,resolution,imp_dir,num_c
     print >>qsf,"#$ -cwd"
     print >>qsf,"#$ -t 1-"+num_cores
     print >>qsf,"#$ -l hostname='i*'"
+    #print >>qsf,"#$ -q lab.q"
     print >>qsf,"module load openmpi-1.6-nodlopen"
     print >>qsf,"module load sali-libraries"
     
@@ -127,21 +102,7 @@ def check_if_jobs_done(job_id_list):
             done=False
     
     return done
-
-def no_consecutive_beads_imprecise(bead_precisions_file):
-          
-    bpf=open(bead_precisions_file,'r')
-        
-    bead_imprecisions=[int(ln.strip().split()[4]) for ln in bpf.readlines()]
-            
-    bpf.close()
-    
-    for i in range(len(bead_imprecisions)-1):
-        if bead_imprecisions[i]==1 and bead_imprecisions[i+1]==1:
-            return False
-    
-    return True
-    
+   
             
 def incremental_coarse_grain():
     # Authors: Shruthi Viswanath
@@ -151,8 +112,10 @@ def incremental_coarse_grain():
     
     config_file = os.path.join(os.path.expanduser('~'),"optrep","input",arg.system,arg.system+".config."+arg.experiment) 
     
-    config_params = parse_config_file(config_file)
+    config_params = stats_helper.parse_config_file(config_file)
+   
     
+    sampling_run_prefix = "run."
     
     if arg.restart=="0":
         correctly_restarted = True
@@ -174,18 +137,17 @@ def incremental_coarse_grain():
             print "skipping resolution",resolution
             continue
                 
+        # STEP 0. make a directory for the new resolution
+        if not os.path.exists(curr_resolution_dir):
+            os.mkdir(curr_resolution_dir)
+        
+        os.chdir(curr_resolution_dir)
+        print "Current resolution: ",resolution
+            
         if (not correctly_restarted and starting_stage=="b") or correctly_restarted : 
             
             correctly_restarted=True
-            
-            print "Current resolution: ",resolution
-            # assume you are in the directory where you want to store the results
-            # STEP 0. make a directory for the new resolution
-            
-            os.mkdir(curr_resolution_dir)
-            
-            os.chdir(curr_resolution_dir)
-        
+       
             #Step 1. Get the next level beadmap. 
             if ires==0: 
                 # first resolution, create beadmap from topology file
@@ -207,9 +169,8 @@ def incremental_coarse_grain():
         # Step 2. Do the sampling
         if (not correctly_restarted and starting_stage=="s") or correctly_restarted : 
             correctly_restarted=True
-            
+                        
             sampling_job_ids=[]
-            sampling_run_prefix = "run."
             
             # launch a qsub script for each sampling run
             for irun in range(1,int(config_params["NUM_SAMPLING_RUNS"])+1):
@@ -220,7 +181,7 @@ def incremental_coarse_grain():
                 os.chdir(curr_sampling_dir)
                     
                 # create the new sampling script
-                create_sampling_qsub_script(arg.system,arg.experiment,resolution,irun,config_params["IMP_DIR"],config_params["SAMPLING_SCRIPT"],config_params["NUM_CORES_PER_SAMPLING_RUN"],config_params["NUM_STEPS_PER_SAMPLING_RUN"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"../bead_map_"+resolution+".txt",os.path.join(config_params["INPUT_DIR"],config_params["MOVE_SIZES_FILE"]),os.path.join(config_params["INPUT_DIR"],config_params["XLINKS_FILE"]),config_params["XLINK_AVG_DISTANCE"])
+                create_sampling_qsub_script(arg.system,arg.experiment,resolution,irun,config_params["IMP_DIR"],config_params["SAMPLING_SCRIPT"],config_params["NUM_CORES_PER_SAMPLING_RUN"],config_params["NUM_STEPS_PER_SAMPLING_RUN"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"../bead_map_"+resolution+".txt",os.path.join(config_params["INPUT_DIR"],config_params["MOVE_SIZES_FILE"]),os.path.join(config_params["INPUT_DIR"],config_params["XLINKS_FILE"]),config_params["XLINK_AVG_DISTANCE"],config_params["LIGAND_MAX_TRANS"],config_params["EV_WEIGHT"])
                 
                 # run qsub script 
                 print "Launching sampling run ",irun
@@ -252,7 +213,7 @@ def incremental_coarse_grain():
              
         # Step 3. Get good-scoring models
         if (not correctly_restarted and starting_stage=="g") or correctly_restarted : 
-            
+                   
             correctly_restarted=True
             
             ret = subprocess.call([os.path.join(config_params["IMP_DIR"],"build","setup_environment.sh"),"python",os.path.join(config_params["IMP_DIR"],"imp/modules/optrep/pyext/src/select_good_scoring_models.py"),"-rd","./","-rp",sampling_run_prefix,"-cl",config_params["GOOD_SCORING_MODEL_CRITERIA_LIST"],"-kl",config_params["GOOD_SCORING_MODEL_KEYWORD_LIST"],"-agl",config_params["GOOD_SCORING_MODEL_AGGREGATE_LOWER_THRESHOLDS_LIST"],"-aul",config_params["GOOD_SCORING_MODEL_AGGREGATE_UPPER_THRESHOLDS_LIST"],"-mlt",config_params["GOOD_SCORING_MODEL_MEMBER_LOWER_THRESHOLDS_LIST"]                                                                                                                                                                                     ,"-mut",config_params["GOOD_SCORING_MODEL_MEMBER_UPPER_THRESHOLDS_LIST"]])
@@ -265,13 +226,10 @@ def incremental_coarse_grain():
         if (not correctly_restarted and starting_stage=="p") or correctly_restarted : 
             
             correctly_restarted=True
-            
-            if os.path.exists("good_scoring_models"):
-                os.chdir("good_scoring_models")
-            else:
-                os.chdir(os.path.join(curr_resolution_dir,"good_scoring_models"))
+                                   
+            os.chdir(os.path.join("good_scoring_models"))
         
-            create_precision_qsub_script(arg.system,arg.experiment,resolution,config_params["IMP_DIR"],config_params["NUM_CORES_ESTIMATE_PRECISION"],config_params["PROTEINS_TO_OPTIMIZE_LIST"],config_params["DOMAINS_TO_OPTIMIZE_LIST"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),config_params["XSCALE"],config_params["LINEAR_CUTOFF"],config_params["GRID_SIZE"],"../bead_precisions_sub")
+            create_precision_qsub_script(arg.system,arg.experiment,resolution,config_params["IMP_DIR"],config_params["NUM_CORES_ESTIMATE_PRECISION"],config_params["PROTEINS_TO_OPTIMIZE_LIST"],config_params["DOMAINS_TO_OPTIMIZE_LIST"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),config_params["XSCALE"],config_params["LINEAR_CUTOFF"][ires],config_params["GRID_SIZE"],"../bead_precisions_sub")
         
             # run qsub script 
             print "Launching precision run"
@@ -308,7 +266,7 @@ def incremental_coarse_grain():
                 exit(1)
         
         # Step 6. Check if done (all beads are precise)
-        all_done = no_consecutive_beads_imprecise(bead_precisions_file)            
+        all_done = stats_helper.no_consecutive_beads_imprecise(bead_precisions_file)            
        
         if all_done:
             break

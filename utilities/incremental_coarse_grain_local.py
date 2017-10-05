@@ -6,6 +6,8 @@ import argparse
 import subprocess
 import datetime
 import time
+import scipy.stats
+import stats_helper
 
 def parse_args():
     
@@ -20,50 +22,6 @@ def parse_args():
     result = parser.parse_args()
  
     return result
-
-
-def parse_config_file(config_file):
-    
-    cf=open(config_file,'r')
-    
-    configs_dict ={}
-    
-    for ln in cf.readlines():
-    
-        if ln.startswith("#") or not ln.strip(): # ignore comment and blank lines
-            continue
-        
-        fields=ln.strip().split("=")
-        
-        if fields[0]=="RESOLUTIONS_LIST":
-            configs_dict[fields[0]]=fields[1].split() # key to list map
-            
-        else :
-            if fields[1].startswith('~'): # location of a file or directory
-     
-                fields[1]=os.path.expanduser('~')+fields[1].lstrip('~') #os.path.join did not work here for some weird reason!
-      
-            configs_dict[fields[0]]=fields[1] # just a single key to string map
-
-    cf.close()    
-    
-    return configs_dict
-    
-    
-
-def no_consecutive_beads_imprecise(bead_precisions_file):
-          
-    bpf=open(bead_precisions_file,'r')
-        
-    bead_imprecisions=[int(ln.strip().split()[4]) for ln in bpf.readlines()]
-            
-    bpf.close()
-    
-    for i in range(len(bead_imprecisions)-1):
-        if bead_imprecisions[i]==1 and bead_imprecisions[i+1]==1:
-            return False
-    
-    return True
                 
 def incremental_coarse_grain():
     # Authors: Shruthi Viswanath
@@ -73,8 +31,10 @@ def incremental_coarse_grain():
     
     config_file = os.path.join(os.path.expanduser('~'),"optrep","input",arg.system,arg.system+".config."+arg.experiment) 
     
-    config_params = parse_config_file(config_file)
+    config_params = stats_helper.parse_config_file(config_file)
              
+    sampling_run_prefix = "run."
+    
     if arg.restart=="0":
         correctly_restarted = True
     else:
@@ -85,6 +45,8 @@ def incremental_coarse_grain():
     # boolean to say if the optimization process is over
     all_done=False
     
+    # always assume we start from the dir of exptNUM/TGT
+    
     parent_dir = os.getcwd()
            
     for ires,resolution in enumerate(config_params["RESOLUTIONS_LIST"]): 
@@ -93,18 +55,17 @@ def incremental_coarse_grain():
         if not correctly_restarted and int(starting_resolution) > int(resolution):
             print "skipping resolution",resolution
             continue
+            
+        # STEP 0. make a directory for the new resolution
+        if not os.path.exists(curr_resolution_dir):
+            os.mkdir(curr_resolution_dir)
         
+        os.chdir(curr_resolution_dir)
+        print "Current resolution: ",resolution
+            
         if (not correctly_restarted and starting_stage=="b") or correctly_restarted : 
             correctly_restarted=True
-            
-            print "Current resolution: ",resolution
-            # assume you are in the directory where you want to store the results
-            # STEP 0. make a directory for the new resolution
-            
-            os.mkdir(curr_resolution_dir)
-            
-            os.chdir(curr_resolution_dir)
-        
+              
             #Step 1. Get the next level beadmap. 
             if ires==0: 
                 # first resolution, create beadmap from topology file
@@ -128,7 +89,6 @@ def incremental_coarse_grain():
             correctly_restarted=True
          
             sampling_job_ids=[]
-            sampling_run_prefix = "run."
             
             sampling_time_file=open("average_sampling_time_res"+resolution+"_expt"+arg.experiment+".txt",'w')
             
@@ -150,7 +110,7 @@ def incremental_coarse_grain():
                     
                    ret = subprocess.call(["mpirun","-np",config_params["NUM_CORES_PER_SAMPLING_RUN"],os.path.join(config_params["IMP_DIR"],"build","setup_environment.sh"),"python",os.path.join(config_params["IMP_DIR"],config_params["SAMPLING_SCRIPT"]),arg.system,
                 os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"../bead_map_"+resolution+".txt",os.path.join(config_params["INPUT_DIR"],config_params["MOVE_SIZES_FILE"]),os.path.join(config_params["INPUT_DIR"],config_params["XLINKS_FILE"])
-                , config_params["XLINK_AVG_DISTANCE"],config_params["NUM_STEPS_PER_SAMPLING_RUN"]])
+                , config_params["XLINK_AVG_DISTANCE"],config_params["NUM_STEPS_PER_SAMPLING_RUN"],config_params["LIGAND_MAX_TRANS"],config_params["EV_WEIGHT"]])
                     
                    num_lines_sampling_file = int(subprocess.check_output(['wc','-l','output/stat_replica.0.out']).strip().split()[0]) 
 
@@ -174,7 +134,8 @@ def incremental_coarse_grain():
                 os.chdir(os.path.join(parent_dir,curr_resolution_dir))
         
             avg_sampling_time = sum(sampling_times_in_seconds)/float(len(sampling_times_in_seconds))
-            print >>sampling_time_file,avg_sampling_time
+            std_err_sampling_time = scipy.stats.sem(sampling_times_in_seconds)
+            print >>sampling_time_file,"%.2f %.2f" %(avg_sampling_time, std_err_sampling_time)
             sampling_time_file.close()
             
         # Step 3. Get good-scoring models
@@ -193,16 +154,13 @@ def incremental_coarse_grain():
             
             correctly_restarted=True
             
-            if os.path.exists("good_scoring_models"): # for correctly_restarted
-                os.chdir("good_scoring_models")
-            else: # for restarting from starting_stage=="p"
-                os.chdir(os.path.join(curr_resolution_dir,"good_scoring_models"))
+            os.chdir(os.path.join("good_scoring_models"))
         
             bead_precisions_file = "bead_precisions_"+resolution+".txt"
             
             ret = subprocess.call([os.path.join(config_params["IMP_DIR"],"build","setup_environment.sh"),"python",os.path.join(config_params["IMP_DIR"],
             "imp/modules/optrep/pyext/src/estimate_sampling_precision_imp_parallel.py"),"-n",config_params["NUM_CORES_ESTIMATE_PRECISION"],"-pl",config_params["PROTEINS_TO_OPTIMIZE_LIST"],"-dl",config_params["DOMAINS_TO_OPTIMIZE_LIST"],
-            "-rd","./","-tf",os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"-gs",config_params["GRID_SIZE"],"-xs",config_params["XSCALE"],"-lc",config_params["LINEAR_CUTOFF"],"-o","../"+bead_precisions_file])
+            "-rd","./","-tf",os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),"-gs",config_params["GRID_SIZE"],"-xs",config_params["XSCALE"],"-lc",config_params["LINEAR_CUTOFF"][ires],"-o","../"+bead_precisions_file])
                 
             if not ret==0:
                 print "Problems getting bead-precisions in resolution ",resolution," for system ",arg.system
@@ -216,7 +174,7 @@ def incremental_coarse_grain():
                 time.sleep(60) # sleep for 60 seconds and try again         
 
         # Step 6. Check if done (all beads are precise)
-        all_done = no_consecutive_beads_imprecise(bead_precisions_file)           
+        all_done = stats_helper.no_consecutive_beads_imprecise(bead_precisions_file)           
        
         if all_done:
             break

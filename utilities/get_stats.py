@@ -19,13 +19,16 @@ bio_system = sys.argv[2]
 
 required_representation =sys.argv[3]
 
+expts_dir = sys.argv[4]
+
+
 config_file = os.path.join(os.path.expanduser('~'),"optrep/input/"+bio_system,bio_system+".config."+expt)
 
 configs_dict = stats_helper.parse_config_file(config_file)
 
 out_file=open(os.path.join(os.path.expanduser('~'),"optrep/expts/stats",bio_system+".expt"+expt+".res"+required_representation+".stats.txt"),"w")
 
-os.chdir(os.path.join(os.path.expanduser('~'),'optrep/expts/expt'+expt,bio_system))
+os.chdir(os.path.join(expts_dir,'expt'+expt,bio_system))
 
 if required_representation == "max":
     optimalRepresentationDir = 'r'+str(max([int(cg.lstrip('r')) for cg in glob.glob('r*')]))
@@ -38,9 +41,9 @@ os.chdir(optimalRepresentationDir)
 # 1. Get sampling efficiency
 machine_run_on = subprocess.check_output(["awk","$1=="+expt+" && $2==\""+bio_system+"\" {print $3}",os.path.join(os.path.expanduser('~'),"optrep/expts/info.expts")]).strip()
 
-avg_sampling_time = stats_helper.get_sampling_time(machine_run_on,expt)
+avg_sampling_time, std_err_sampling_time = stats_helper.get_sampling_time(machine_run_on,expt)
 
-print >>out_file,"Average sampling time in seconds on ",machine_run_on," : %.2f" %(float(avg_sampling_time))
+print >>out_file,"Average sampling time and std error in seconds on ",machine_run_on," : %.2f %.2f" %(float(avg_sampling_time),float(std_err_sampling_time))
 
 # 2. Get representation precision 
 all_beads_stats,data_beads_stats,non_data_beads_stats=stats_helper.get_representation_resolution_and_precision(configs_dict["PROTEINS_TO_OPTIMIZE_LIST"],configs_dict["DOMAINS_TO_OPTIMIZE_LIST"],xlink_file=os.path.join(configs_dict["INPUT_DIR"],configs_dict["XLINKS_FILE"]))
@@ -56,10 +59,10 @@ print >>out_file,"Non-data bead average resolution, diameter, weighted diameter 
 data_type =configs_dict["GOOD_SCORING_MODEL_CRITERIA_LIST"]  # for each criterion/data set/data type
 
 if data_type=="Crosslinks":
-    avg_distance_between_xlink_beads = stats_helper.get_fit_to_xlinks(float(configs_dict["GOOD_SCORING_MODEL_MEMBER_UPPER_THRESHOLDS_LIST"]),configs_dict["GOOD_SCORING_MODEL_KEYWORD_LIST"])
+    avg_distance_between_xlink_beads,std_err_distance_between_xlink_beads = stats_helper.get_fit_to_xlinks(float(configs_dict["GOOD_SCORING_MODEL_MEMBER_UPPER_THRESHOLDS_LIST"]),configs_dict["GOOD_SCORING_MODEL_KEYWORD_LIST"])
     # TODO assuming only 1 xlink type that is related to 1 xlink file. There could be multiple in principle, though!
     
-    print >>out_file,"Average distance between xlink'ed beads:%.2f" %(avg_distance_between_xlink_beads)
+    print >>out_file,"Average distance and std error between xlink'ed beads:%.2f %.2f" %(float(avg_distance_between_xlink_beads),float(std_err_distance_between_xlink_beads))
 
 os.chdir('good_scoring_models')
 

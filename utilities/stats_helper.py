@@ -247,7 +247,7 @@ class Violations(object):
                 (res1,pos1,res2,pos2) = items[3:7]
             
                 self.required_keys[k]=(res1,pos1,res2,pos2)
-        
+       
         ef.close()
   
     def get_xlink_distances(self, lndict):
@@ -261,7 +261,7 @@ class Violations(object):
         for rst in lndict:
             if not rst in self.required_keys:
                 continue
-                
+            
             distances[self.required_keys[rst]] = float(lndict[rst])
        
         return distances
@@ -287,26 +287,30 @@ def get_fit_to_xlinks(xlink_threshold,xlink_keyword):
     distance_between_xlink_beads={Analysis.required_keys[k]:[] for k in Analysis.required_keys}
     
     for runid,replicaid,modelid in gsm_ids_list:
-            
-        stat_file_line=subprocess.check_output(["awk","NR=="+str(int(modelid)+1)+" {print} ",os.path.join("run."+runid,"output","stat."+replicaid+".out")]) # with awk and subprocess, always have awk in one string, the condition and action in one string and the filename in another string, that works! 
-   
+  
+        #print runid,replicaid,modelid
+
+        stat_file_line=subprocess.check_output(["awk","NR=="+str(int(modelid)+2)+" {print} ",os.path.join("run."+runid,"output","stat."+replicaid+".out")]) # with awk and subprocess, always have awk in one string, the condition and action in one string and the filename in another string, that works! 
+  
+
+
         xlink_distances_model=Analysis.get_xlink_distances(eval(stat_file_line.strip('\n'))) # return a dictionary keyed by crosslinks, and values equal to values for a model
         
         for k in xlink_distances_model:
                 distance_between_xlink_beads[k].append(xlink_distances_model[k])
    
     # get average over all xlinks and all models
-    num_xlinks_in_all_models=0.0
-    sum_xlink_distances_across_all_models=0.0
-  
-    for k in distance_between_xlink_beads:
-        sum_xlink_distances_across_all_models += sum(distance_between_xlink_beads[k])
-       
-        num_xlinks_in_all_models+=len(distance_between_xlink_beads[k])
+    all_xlinks_all_models_distances = []
+
+    for xl in distance_between_xlink_beads:
+        for elem in distance_between_xlink_beads[xl]:
+            all_xlinks_all_models_distances.append(elem)
         
-    avg_distances_across_all_xlinks=sum_xlink_distances_across_all_models/float(num_xlinks_in_all_models)
+    avg_distances_across_all_xlinks=sum(all_xlinks_all_models_distances)/float(len(all_xlinks_all_models_distances))
     
-    return(avg_distances_across_all_xlinks)
+    std_err_distances_across_all_xlinks = scipy.stats.sem(all_xlinks_all_models_distances)
+    
+    return(avg_distances_across_all_xlinks,std_err_distances_across_all_xlinks)
 
 def get_sampling_time(machine_run_on,expt):
     
@@ -315,11 +319,15 @@ def get_sampling_time(machine_run_on,expt):
     if machine_run_on == "bass": # on local machine things were returned directly from 
         sampling_time_file = open(os.path.join('average_sampling_time_res'+curr_dir.lstrip('r')+'_expt'+expt+'.txt'),'r')
         
-        avg_sampling_time = sampling_time_file.readlines()[0].strip()
+        fields = sampling_time_file.readlines()[0].strip().split()
+        
+        avg_sampling_time = fields[0]
+        
+        std_err_sampling_time = fields[1]
         
         sampling_time_file.close()
         
-        return(avg_sampling_time)
+        return(avg_sampling_time,std_err_sampling_time)
     
     else:
         sampling_times = []
@@ -359,8 +367,24 @@ def get_sampling_time(machine_run_on,expt):
         
         avg_sampling_time = sum(sampling_times)/float(len(sampling_times))
         
-        return(avg_sampling_time)
+        std_err_sampling_time = scipy.stats.sem(sampling_times)
+        
+        return(avg_sampling_time,std_err_sampling_time)
 
+def no_consecutive_beads_imprecise(bead_precisions_file):
+          
+    bpf=open(bead_precisions_file,'r')
+        
+    bead_imprecisions=[int(ln.strip().split()[4]) for ln in bpf.readlines()]
+            
+    bpf.close()
+    
+    for i in range(len(bead_imprecisions)-1):
+        if bead_imprecisions[i]==1 and bead_imprecisions[i+1]==1:
+            return False
+    
+    return True
+    
 def parse_config_file(config_file):
     
     cf=open(config_file,'r')
@@ -376,7 +400,15 @@ def parse_config_file(config_file):
         
         if fields[0]=="RESOLUTIONS_LIST":
             configs_dict[fields[0]]=fields[1].split() # key to list map
-            
+        
+        elif fields[0]=="LINEAR_CUTOFF":
+          
+            if len(fields[1].split())==1: # same linear cutoff for all
+                configs_dict[fields[0]]=[fields[1] for i in range(len(configs_dict["RESOLUTIONS_LIST"]))]
+             
+            else:
+                configs_dict[fields[0]]=fields[1].split()        
+
         else :
             if fields[1].startswith('~'): # location of a file or directory
      
