@@ -292,13 +292,13 @@ def get_fit_to_xlinks(xlink_threshold,xlink_keyword):
 
         stat_file_line=subprocess.check_output(["awk","NR=="+str(int(modelid)+2)+" {print} ",os.path.join("run."+runid,"output","stat."+replicaid+".out")]) # with awk and subprocess, always have awk in one string, the condition and action in one string and the filename in another string, that works! 
   
-
-
         xlink_distances_model=Analysis.get_xlink_distances(eval(stat_file_line.strip('\n'))) # return a dictionary keyed by crosslinks, and values equal to values for a model
-        
+       
+        #print runid,replicaid,modelid,
         for k in xlink_distances_model:
-                distance_between_xlink_beads[k].append(xlink_distances_model[k])
-   
+            #print k, xlink_distances_model[k],
+            distance_between_xlink_beads[k].append(xlink_distances_model[k])
+        print
     # get average over all xlinks and all models
     all_xlinks_all_models_distances = []
 

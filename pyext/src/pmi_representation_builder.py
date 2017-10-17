@@ -51,8 +51,13 @@ def add_representation(state,input_dir,fasta_file,topology_file,bead_map_file):
                 #print curr_mol[startres_bead-1:endres_bead]
                 
                 #curr_mol.add_representation(curr_mol.residue_range(str(startres_bead),str(endres_bead)),resolutions=[endres_bead-startres_bead+1],color=clr) 
-                
-                curr_mol.add_representation(curr_mol[startres_bead-1:endres_bead],resolutions=[endres_bead-startres_bead+1],color=clr) #TODO not considered multi-scaling yet
+                if pdb!="-":
+                    select_residues = curr_mol[startres_bead-1:endres_bead] & atomic 
+                else:
+                    select_residues = curr_mol[startres_bead-1:endres_bead]
+                 
+                curr_mol.add_representation(select_residues,resolutions=[endres_bead-startres_bead+1],color=clr)
+                #TODO not considered multi-scaling yet
                 #TODO not considering missing residues in PDB here
      
     return mols

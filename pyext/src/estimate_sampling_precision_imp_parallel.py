@@ -93,12 +93,12 @@ def estimate_sampling_precision():
     # Add slaves 
     if running_on_cluster():
         s = IMP.parallel.SGEQsubSlaveArray(arg.num_cores,'-l arch=linux-x64 -q lab.q -l hostname="i*"')
-    
+        m.add_slave(s)
+
     else:
         for i in range(arg.num_cores):
             s = IMP.parallel.LocalSlave()
-    
-    m.add_slave(s)
+            m.add_slave(s)
 
     # Generate a context (an environment on each slave in which tasks will be
     # run). Provide a setup function for this context. 
