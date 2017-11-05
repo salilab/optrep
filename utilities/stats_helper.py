@@ -40,7 +40,59 @@ def get_sampling_precision(model_sample_id_file,proteins_list,grid_size):
                 sampling_precision = 100000.0
 
         return sampling_precision
+ 
+def get_clusters_at_given_precision(model_sample_id_file,proteins_list,given_precision):
+        
+        # get the model index of run1 and run2 models separately
+        run1_all_models,run2_all_models=get_run_identity(model_sample_id_file)
+        all_models=run1_all_models+run2_all_models
+
+        total_num_models = len(all_models)
+
+        # get cutoffs from all vs all distances
+        distmat_full=get_all_vs_all_rmsd(proteins_list)
+ 
+        cluster_centers,cluster_members=precision_cluster(distmat_full,total_num_models,given_precision)
+        
+        ctable,retained_clusters=get_contingency_table(len(cluster_centers),cluster_members,all_models,run1_all_models,run2_all_models)
+        
+        cluster_centers_file=open('cluster_centers.txt','w')
+
+        # Output models to files
+        for i in range(len(retained_clusters)):  
+            clus=retained_clusters[i]
+            print >>cluster_centers_file,cluster_centers[clus]
     
+            both_file=open('cluster.'+str(i)+'.all.txt','w')
+ 
+            for mem in cluster_members[clus]: #TODO Not efficient, could have done this while doing the contingency table
+                print >>both_file,mem
+       
+            both_file.close()
+    
+        cluster_centers_file.close()
+        
+        return()
+        
+ 
+def read_cluster_members():
+        
+        num_clusters=0
+        
+        cluster_members=[]
+        
+        # Output models to files
+        for i in range(len(glob.glob('cluster.*.all.txt'))):  
+            cluster_members.append([])
+            
+            cf = open('cluster.'+str(i)+'.all.txt','r')
+            for ln in cf.readlines():
+                cluster_members[i].append(int(ln.strip()))
+        
+            cf.close()  
+              
+        return(cluster_members)
+  
 def get_all_vs_all_rmsd(proteins_list):
     
     #load coordinates
@@ -108,20 +160,23 @@ def get_run_identity(sample_id_file):
 
 def get_cutoffs_list(distmat,gridSize,numModels):
 
+	#mindist = distmat.min()
+	#maxdist = distmat.max()
+	
 	maxdist=0.0
 	mindist=1000000.0
 	for i in range(numModels-1):
-    		for j in range(i+1,numModels):
-        		if distmat[i][j]>maxdist:
-            			maxdist=distmat[i][j]
+    	    for j in range(i+1,numModels):
+                if distmat[i][j]>maxdist:
+                    maxdist=distmat[i][j]
 
-        		if distmat[i][j]<mindist:
-           			 mindist=distmat[i][j]
+                if distmat[i][j]<mindist:
+                    mindist=distmat[i][j]
+	
+	cutoffs=numpy.arange(mindist,maxdist,gridSize) # or maxdist/2.0, 5.0 
+	print cutoffs
 
-    
-	cutoffs=numpy.arange(mindist,maxdist,gridSize) # or maxdist/2.0, 5.0 s
-
-	return cutoffs
+        return cutoffs
 
 def precision_cluster(distmat,numModels,rmsd_cutoff):
     #STEP 2. Populate the neighbors ofa given model
@@ -298,7 +353,7 @@ def get_fit_to_xlinks(xlink_threshold,xlink_keyword):
         for k in xlink_distances_model:
             #print k, xlink_distances_model[k],
             distance_between_xlink_beads[k].append(xlink_distances_model[k])
-        print
+     
     # get average over all xlinks and all models
     all_xlinks_all_models_distances = []
 
@@ -398,7 +453,7 @@ def parse_config_file(config_file):
         
         fields=ln.strip().split("=")
         
-        if fields[0]=="RESOLUTIONS_LIST":
+        if fields[0]=="RESOLUTIONS_LIST" or "PROTEINS_TO_OPTIMIZE_LIST" or "DOMAINS_TO_OPTIMIZE_LIST":
             configs_dict[fields[0]]=fields[1].split() # key to list map
         
         elif fields[0]=="LINEAR_CUTOFF":

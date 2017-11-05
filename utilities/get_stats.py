@@ -21,7 +21,6 @@ required_representation =sys.argv[3]
 
 expts_dir = sys.argv[4]
 
-
 config_file = os.path.join(os.path.expanduser('~'),"optrep/input/"+bio_system,bio_system+".config."+expt)
 
 configs_dict = stats_helper.parse_config_file(config_file)
@@ -53,7 +52,6 @@ print >>out_file,"All bead average resolution, diameter, weighted diameter :%.2f
 print >>out_file,"Data bead average resolution, diameter, weighted diameter :%.2f %.2f %.2f" %(data_beads_stats["avg_num_residues"],data_beads_stats["avg_dia"],data_beads_stats["avg_weighted_dia"])
 
 print >>out_file,"Non-data bead average resolution, diameter, weighted diameter :%.2f %.2f %.2f" %(non_data_beads_stats["avg_num_residues"],non_data_beads_stats["avg_dia"],non_data_beads_stats["avg_weighted_dia"])
-
 
 # 3. Get fit to data
 data_type =configs_dict["GOOD_SCORING_MODEL_CRITERIA_LIST"]  # for each criterion/data set/data type
