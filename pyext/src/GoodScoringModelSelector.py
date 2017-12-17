@@ -151,7 +151,7 @@ class GoodScoringModelSelector(object):
                             self.all_good_scoring_models.append((runid,replicaid,frameid))
                             print >>outf,len(self.all_good_scoring_models)-1,runid,replicaid,frameid,
                             for mcv in model_criteria_values:
-                                print >>outf,mcv,
+                                print >>outf,"%.2f" %(mcv),
                             print >>outf
         
                     rsf.close()

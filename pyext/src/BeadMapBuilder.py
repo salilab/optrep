@@ -38,8 +38,8 @@ class BeadMapBuilder(object):
            
             protein=fields[0]
             domain=fields[1]
-            start_residue_index=int(fields[3])
-            end_residue_index=int(fields[4])
+            start_residue_index=int(fields[4])
+            end_residue_index=int(fields[5])
             
             self.set_bead_map_given_residue_range((protein,domain),start_residue_index,end_residue_index,resolution)
     
@@ -199,8 +199,8 @@ class BeadMapBuilder(object):
         '''
         f=open(output_file,'w')
         
-        for p in self.bead_maps:
-            for bead in self.bead_maps[p]:
+        for p in sorted(self.bead_maps):
+            for bead in sorted(self.bead_maps[p]):
                 print >>f,p[0],p[1],bead[0],bead[1]
              
         f.close()
