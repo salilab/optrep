@@ -61,6 +61,10 @@ void SPE::order_components_by_topology_file(const std::vector<std::pair<String, 
 	
 	tfile.close();
 
+	 //for(unsigned int i=0;i<components_calculate_precision_.size();i++){
+	 //	std::cout << components_calculate_precision_[i] <<std::endl ;
+	 //}
+		
 	if(input_components_calculate_precision.size()!=components_calculate_precision_.size())
 		std::cout<< "some components were not defined in the topology file!" <<std::endl; 
 
@@ -160,6 +164,9 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
                     IMP::atom::Hierarchies beads_i = IMP::atom::get_leaves(chains_i[ci]);
                     for (unsigned int bi = 0; bi<beads_i.size();bi++) { 
                         
+			if(core::RigidMember::get_is_setup(beads_i[bi])) // has structure and its representation need not be optimized
+				continue;
+
                         IMP::algebra::Vector3D curr_coords = IMP::core::XYZR(beads_i[bi]).get_coordinates();
                         
                         if(i==0) {
@@ -178,7 +185,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
                         bead_coords_[global_bead_index].push_back(curr_coords);	
 
                         // std::cout << global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
-
+			//std::cout <<global_bead_index << " " << chains_i[ci]->get_name() << beads_i[bi] << std::endl ; 
                         global_bead_index++; // we can do this because components to calculate precision are in order of the topology file
 
                     } //end for beads in protein domain     

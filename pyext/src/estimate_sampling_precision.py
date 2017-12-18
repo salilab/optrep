@@ -63,7 +63,7 @@ def estimate_sampling_precision():
    
     for prot,dom in zip(arg.proteins_to_update,arg.domains_to_update):
         components_to_update.append((prot,dom))
-    
+   
     num_global_beads = get_number_of_global_beads(components_to_update,arg.run_dir,arg.topology_file)
 
     # Add tasks with different input parameters
@@ -73,8 +73,8 @@ def estimate_sampling_precision():
     for i in range(arg.core_number):
         start_bead=start_bead+num_beads_per_core
     
-    end_bead=min(start_bead+num_beads_per_core-1,num_global_beads-1)
-         
+    end_bead=int(min(start_bead+num_beads_per_core-1,num_global_beads-1))
+    
     spe=IMP.optrep.SPE(arg.topology_file,arg.run_dir,components_to_update)
     
     spe.load_coordinates_and_bead_sizes_from_model_files()
