@@ -26,7 +26,9 @@ SPE::SPE(const String topology_file, const String gsm_directory,const std::vecto
         
 models_dir_=gsm_directory;
 
-order_components_by_topology_file_and_add_residue_range(input_components_calculate_precision, topology_file);
+//components_calculate_precision_=components_calculate_precision;
+
+order_components_by_topology_file(input_components_calculate_precision, topology_file);
 
 // Get the mapping of model index to sample number. 
 get_models_by_sample(gsm_directory+"model_sample_ids.txt");
@@ -35,45 +37,36 @@ number_of_global_beads_=0;
 
 }
 
-/* Order so that we have the same order of beads as in the RMF hierarchy.
- * Also get the residue range for each domain.
+/* Order so that we have the same order as in the RMF
+ * 
 */
-void SPE::order_components_by_topology_file_and_add_residue_range(const std::vector<std::pair<String, String > > input_components_calculate_precision, const String topology_file) {
+void SPE::order_components_by_topology_file(const std::vector<std::pair<String, String > > input_components_calculate_precision, const String topology_file) {
 
 	std::ifstream tfile;
 	tfile.open(topology_file.c_str());
 	
-	String line, prot, dom,fasta,fastakey;
-    int residue_start, residue_end;
+	//just need the first two fields
+	String line, prot, dom;
 
 	while (std::getline(tfile,line)) {
 		std::istringstream ss(line);
 		ss >> prot;
 		ss >> dom; 
-        ss >> fasta;
-        ss >> fastakey;
-        
-        ss >> residue_start;
-        ss >> residue_end;
-        
-        std::pair<String, String> protein_domain = {prot,dom};
-        std::pair<int, int> residue_range = {residue_start,residue_end};
-        
-		std::pair<std::pair<String, String>,std::pair<int, int> > protein_domain_and_range = {protein_domain,residue_range};
+
+		std::pair<String,String > protein_domain = {prot,dom};
 
 		for(unsigned int i=0;i<input_components_calculate_precision.size();i++){
 
 			if (protein_domain == input_components_calculate_precision[i])	
-                components_calculate_precision_.push_back(protein_domain_and_range); 
+                components_calculate_precision_.push_back(protein_domain); 
 		}
         } 
 	
 	tfile.close();
 
-  /*   for(unsigned int i=0;i<components_calculate_precision_.size();i++){
-  			std::cout << components_calculate_precision_[i] <<std::endl ;
-  		}
-  */
+	 //for(unsigned int i=0;i<components_calculate_precision_.size();i++){
+	 //	std::cout << components_calculate_precision_[i] <<std::endl ;
+	 //}
 		
 	if(input_components_calculate_precision.size()!=components_calculate_precision_.size())
 		std::cout<< "some components were not defined in the topology file!" <<std::endl; 
@@ -136,67 +129,91 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
 
         rmf::load_frame(fh_i, RMF::FrameID(0));          
 
-        unsigned int global_bead_index=0; // bead index over all selected protein domains for which we are estimating precision
-      
-        // need only from the first hierarchy 
-        IMP::atom::Hierarchies states_i = hier_0[0].get_children();
-        
-        for(unsigned int ci=0;ci<components_calculate_precision_.size();ci++) {
-            
-            unsigned int local_bead_index=0; // the bead index for a single (protein,domain).
-			
-			String protein = (components_calculate_precision_[ci].first).first;
-			
-			Ints residue_list = Ints(); //TODO
-			
-			for(int ri=(components_calculate_precision_[ci].second).first;ri<=(components_calculate_precision_[ci].second).second;ri++)
-				residue_list.push_back(ri);
-                    
-            IMP::atom::Selection s = IMP::atom::Selection(states_i);
-            s.set_molecule(protein);
-            s.set_residue_indexes(residue_list);
-        	
-			Particles ps = s.get_selected_particles();
-		
-            for(unsigned int pi=0;pi<ps.size();pi++) {
-            
-            	IMP::algebra::Vector3D curr_coords = IMP::core::XYZR(ps[pi]).get_coordinates();
-                        
-                if(i==0) {
-               
-			   	 	//create new coords list
-                	bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
-                            
-			   	 	std::pair<unsigned int,unsigned int> indices = {ci,local_bead_index};
-			  	
-                    global_index_to_protein_and_local_bead_index_map_.push_back(indices);
-   
-					 // assume same bead sizes for all models
-                     Float curr_dia=IMP::core::XYZR(ps[pi]).get_radius()*2.0;
-                     bead_diameter_.push_back(curr_dia);
-                     
-                     // std::cout << curr_coords << " " << indices << " " << global_bead_index << " " << ps[pi] << std::endl ;
+	    unsigned int  global_bead_index=0;
+	    unsigned int protein_domain_index=0;
 
-                     
-                 }	
+        /* same for all models: list of (protein/domain,bead) indices for components to calculate precision.
+        Can insert beads in this order since the components to calculate precision were sorted by hierarchy/topology file.
+        */ 
+
+        // need only from the first hierarchy 
+        IMP::atom::Hierarchies states_i = hier_0[0].get_children(); 
+        for (unsigned int si = 0; si<states_i.size();si++) {
+            IMP::atom::Hierarchies chains_i = states_i[si].get_children();
+
+            for (unsigned int ci = 0; ci<chains_i.size();ci++) {
+         	    // new protein
+
+                    if (!included_protein(chains_i[ci]->get_name()))
+			continue;
+                
+		    unsigned int local_bead_index = 0 ; // this index is over beads in the protein domain
+
+		    /* Note: local_index_over_protein_domain is the bead index for a single (protein,domain). 
+ 		    It is needed to map to the bead_map and coarse grain in BeadMapBuilder. 
+		    the protein_domain_index though, is an index over the (protein,domain) tuples that we need to estimate precision of.
+		    It is local to this code and not needed for mapping. 
+		    */
+
+		    /* Currently we assume that if a protein is mentioned in the input list of components *ALL* its unstructured domains are optimized, i.e. 
+                    their bead-wise precision is estimated. 
+		    But this need not be the case and we must be able to select by domain, but we dont have this yet, because RMF does not have domain labels,			  of the kind used in topology and bead map files, it has only protein labels.
+ 		    */
+
+                    IMP::atom::Hierarchies beads_i = IMP::atom::get_leaves(chains_i[ci]);
+                    unsigned int bi = 0; 
+		    while(bi<beads_i.size()) { 
+                    
+			if(core::RigidMember::get_is_setup(beads_i[bi])) {  // has structure and its representation need not be optimized
+				while(core::RigidMember::get_is_setup(beads_i[bi]))
+					bi++;
+				
+				protein_domain_index+=1;	
+				local_bead_index = 0; // the next domain of this protein 
+			}
+
+                        IMP::algebra::Vector3D curr_coords = IMP::core::XYZR(beads_i[bi]).get_coordinates();
+                        
+                        if(i==0) {
+                            //create new coords list
+                            bead_coords_.push_back( std::vector<IMP::algebra::Vector3D >() );
+                            
+			    std::pair<unsigned int,unsigned int> indices = {(unsigned)protein_domain_index,local_bead_index};
+			   // protein_domain_index also does not work! 
+
+                            global_index_to_protein_and_local_bead_index_map_.push_back(indices);
+
+			    // assume same bead sizes for all models
+                            Float curr_dia=IMP::core::XYZR(beads_i[bi]).get_radius()*2.0;
+                            bead_diameter_.push_back(curr_dia);
+                        }	
 			
-                 bead_coords_[global_bead_index].push_back(curr_coords);	
-             
-                 
-                 global_bead_index ++;
-                 
-                 local_bead_index++;
-			 }
-            
-        }
-        
-	    if(break_after_first_model) {
-		      break;
-	 }
+                        bead_coords_[global_bead_index].push_back(curr_coords);	
+
+			std::cout << protein_domain_index << " " << local_bead_index << std::endl; 
+                        // std::cout << global_bead_index<<" " << bead_coords_[global_bead_index][i]<<" "<< curr_coords <<std::endl;
+			//std::cout <<global_bead_index << " " << chains_i[ci]->get_name() << beads_i[bi] << std::endl ; 
+                        global_bead_index++; // we can do this because components to calculate precision are in order of the topology file
+
+			local_bead_index ++; 
+
+			bi++;
+                    
+			} //end for beads in protein domain     
+			
+			protein_domain_index++;
+                
+              } // end for each chain
+
+        } // end for each state
+
+	if(break_after_first_model) {
+		break;
+	}
 
  	}// end for each model
 	
-    number_of_global_beads_ = bead_diameter_.size();	
+        number_of_global_beads_ = bead_diameter_.size();	
 	//std::cout << beads_per_protein_domain_.size() <<" " <<   beads_per_protein_domain_[0] <<  " " <<  beads_per_protein_domain_[1] << std::endl; 
         	
 } 
@@ -551,7 +568,7 @@ String SPE::get_single_bead_precision_output(const unsigned int global_bead_inde
        unsigned int local_bead_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].second;
 
        char outstring[500];
-        sprintf(outstring,"%s %s %10u %.2f %2d",(components_calculate_precision_[prot_index].first).first.c_str(),(components_calculate_precision_[prot_index].first).second.c_str(), local_bead_index,bead_sampling_precision,int(bead_imprecise));
+        sprintf(outstring,"%s %s %10u %.2f %2d",components_calculate_precision_[prot_index].first.c_str(),components_calculate_precision_[prot_index].second.c_str(), local_bead_index,bead_sampling_precision,int(bead_imprecise));
 
       return(String(outstring));
 
@@ -615,7 +632,8 @@ void SPE::print_all_bead_precisions(const std::string out_file_name) const {
 	        unsigned int prot_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].first;
 		unsigned int local_bead_index = global_index_to_protein_and_local_bead_index_map_[global_bead_index].second;
 
-		fprintf(out_file,"%s %s %u %.3f %d\n",(components_calculate_precision_[prot_index].first).first.c_str(),(components_calculate_precision_[prot_index].first).second.c_str(), local_bead_index, bead_precisions_[global_bead_index],int(bead_imprecise_[global_bead_index]));
+		fprintf(out_file,"%s %s %u %.3f %d\n",components_calculate_precision_[prot_index].first.c_str(),
+			components_calculate_precision_[prot_index].second.c_str(), local_bead_index, bead_precisions_[global_bead_index],int(bead_imprecise_[global_bead_index]));
 						
 		 
     }

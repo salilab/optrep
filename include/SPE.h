@@ -68,7 +68,7 @@ protected:
 String models_dir_;
 
 /* list of <protein,domain> names for which representation needs to be optimized*/
-std::vector<std::pair<String, String > > components_calculate_precision_;
+std::vector<std::pair<std::pair<String, String >,std::pair<int, int > > > components_calculate_precision_;
 
  std::size_t total_number_of_models_;
 
@@ -98,11 +98,9 @@ std::vector<std::pair<String, String > > components_calculate_precision_;
  std::vector<bool > bead_imprecise_;
  
  // Methods
-void order_components_by_topology_file(const std::vector<std::pair<String, String > > input_components_calculate_precision, const String topology_file);
+void order_components_by_topology_file_and_add_residue_range(const std::vector<std::pair<String, String > > input_components_calculate_precision, const String topology_file);
 
 void get_models_by_sample(const String sample_id_file);
-
-int included_protein_domain(const String chain_full_name) const;
 
 IMP::optrep::DistanceMatrix* get_all_vs_all_distances(const unsigned int  global_bead_index) const;
 
