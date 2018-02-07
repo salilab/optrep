@@ -116,7 +116,7 @@ def plot_beadmaps():
     config_params = stats_helper.parse_config_file(config_file)
     
     xlinked_residues = get_xlinked_residues(os.path.join(os.path.expanduser('~'),"optrep","input",arg.system,config_params["XLINKS_FILE"][0]),config_params["PROTEINS_TO_OPTIMIZE_LIST"])
-    
+   
     precision_residues = {}
     bead_boxes={}
     
@@ -130,7 +130,7 @@ def plot_beadmaps():
         beadmap_file = os.path.join(data_dir,"r"+resolution,"bead_map_"+resolution+".txt")
         
         precision_residues[resolution],residue_range,bead_boxes[resolution]= generate_precisions_per_residue(precision_file,beadmap_file, config_params["PROTEINS_TO_OPTIMIZE_LIST"])
-        
+
         min_precision=min(min_precision,min(precision_residues[resolution][0]))
         max_precision=max(max_precision,max(precision_residues[resolution][0]))
     
@@ -148,7 +148,7 @@ def plot_beadmaps():
     matplotlib.rcParams["xtick.labelsize"] = 16 
       
     fig = plt.figure(figsize=(14, 4))
-  
+ 
     # first add the xlinks to show where the data is along the sequence
     ax1 = fig.add_subplot(6,1,1)
     ax1.bar(residue_range,xlink_bars,width=1.0,align='edge',color='black')
@@ -193,7 +193,7 @@ def plot_beadmaps():
     ax6.imshow(precision_residues['30'],cmap='hot',interpolation='nearest',aspect='auto',extent=[min(residue_range),max(residue_range)+1,0,0.5],norm=matplotlib.colors.Normalize(vmin=min_precision,vmax=max_precision))
     ax6.vlines(bead_boxes['30'],ymin=0,ymax=0.5,colors='black',linestyles='dotted',linewidth=0.1)
     ax6.set_xlim(min(residue_range), max(residue_range)+1)
-    ax6.set_xticks(numpy.arange(25, max(residue_range)+1, 35))
+    ax6.set_xticks(numpy.arange(min(residue_range), max(residue_range)+1, 20))
     ax6.set_yticks([])
     
     plt.tight_layout()
@@ -202,7 +202,7 @@ def plot_beadmaps():
     plt.subplots_adjust(wspace=0.01,hspace=0.01) 
     # note that this must be called AFTER any call to tight_layout
     
-    plt.savefig("figure_2_"+arg.system+".pdf",dpi=600)
+    plt.savefig("beadheatmap_"+arg.system+".pdf",dpi=600)
       
 if __name__ == "__main__" :
     plot_beadmaps()

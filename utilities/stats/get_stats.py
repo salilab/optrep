@@ -45,7 +45,7 @@ avg_sampling_time, std_err_sampling_time = stats_helper.get_sampling_time(machin
 print >>out_file,"Average sampling time and std error in seconds on ",machine_run_on," : %.2f %.2f" %(float(avg_sampling_time),float(std_err_sampling_time))
 
 # 2. Get representation precision 
-all_beads_stats,data_beads_stats,non_data_beads_stats=stats_helper.get_representation_resolution_and_precision(configs_dict["PROTEINS_TO_OPTIMIZE_LIST"],configs_dict["DOMAINS_TO_OPTIMIZE_LIST"],xlink_file=os.path.join(configs_dict["INPUT_DIR"],configs_dict["XLINKS_FILE"]))
+all_beads_stats,data_beads_stats,non_data_beads_stats=stats_helper.get_representation_resolution_and_precision(configs_dict["PROTEINS_TO_OPTIMIZE_LIST"],configs_dict["DOMAINS_TO_OPTIMIZE_LIST"],os.path.join(configs_dict["INPUT_DIR"],configs_dict["XLINKS_FILE"]))
 
 print >>out_file,"All bead average resolution, diameter, weighted diameter :%.2f %.2f %.2f" %(all_beads_stats["avg_num_residues"],all_beads_stats["avg_dia"],all_beads_stats["avg_weighted_dia"])                                                                                                                               
                                                                                                                                  

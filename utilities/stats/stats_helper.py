@@ -441,13 +441,13 @@ def no_consecutive_beads_imprecise(bead_precisions_file):
     return True
     
 def parse_config_file(config_file):
-    
+        
     cf=open(config_file,'r')
     
     configs_dict ={}
-    
+      
     for ln in cf.readlines():
-    
+            
         if ln.startswith("#") or not ln.strip(): # ignore comment and blank lines
             continue
         
@@ -464,11 +464,9 @@ def parse_config_file(config_file):
             else:
                 configs_dict[fields[0]]=fields[1].split()        
 
-        else :
+        else:
             if fields[1].startswith('~'): # location of a file or directory
-     
                 fields[1]=os.path.expanduser('~')+fields[1].lstrip('~') #os.path.join did not work here for some weird reason!
-      
             configs_dict[fields[0]]=fields[1] # just a single key to string map
 
     cf.close()    
