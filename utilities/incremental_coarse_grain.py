@@ -228,8 +228,12 @@ def incremental_coarse_grain():
             correctly_restarted=True
                                    
             os.chdir(os.path.join("good_scoring_models"))
-        
-            create_precision_qsub_script(arg.system,arg.experiment,resolution,config_params["IMP_DIR"],config_params["NUM_CORES_ESTIMATE_PRECISION"],config_params["PROTEINS_TO_OPTIMIZE_LIST"],config_params["DOMAINS_TO_OPTIMIZE_LIST"],os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),config_params["XSCALE"],config_params["LINEAR_CUTOFF"][ires],config_params["GRID_SIZE"],"../bead_precisions_sub")
+
+            proteins_list = " ".join(config_params["PROTEINS_TO_OPTIMIZE_LIST"])
+
+            domains_list = " ".join(config_params["DOMAINS_TO_OPTIMIZE_LIST"])
+
+            create_precision_qsub_script(arg.system,arg.experiment,resolution,config_params["IMP_DIR"],config_params["NUM_CORES_ESTIMATE_PRECISION"],proteins_list,domains_list,os.path.join(config_params["INPUT_DIR"],config_params["TOPOLOGY_FILE"]),config_params["XSCALE"],config_params["LINEAR_CUTOFF"][ires],config_params["GRID_SIZE"],"../bead_precisions_sub")
         
             # run qsub script 
             print "Launching precision run"
