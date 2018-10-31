@@ -8,6 +8,9 @@ Note that a patch was applied to the `dof/__init__.py` file in IMP's PMI module 
 
 This patch will be committed to the master branch of IMP in a subsequent version, along with this module. 
 
+## Note
+See salilab.org/optimal_representation for examples using this module. 
+
 ## Information
 _Author(s)_: Shruthi Viswanath 
 
