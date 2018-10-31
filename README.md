@@ -1,4 +1,4 @@
-This repository is meant to be used as an IMP [IMP](https://integrativemodeling.org) (*Integrative Modeling Platform*) module. 
+This repository is meant to be used as an [IMP](https://integrativemodeling.org) (*Integrative Modeling Platform*) module. 
 It implements a method for obtaining an optimal coarse-grained bead representation for a given system, given input data, scoring functions, and sampling scheme, using an incremental coarse-graining algorithm (see publications below). 
 
 ## Prerequisites 
