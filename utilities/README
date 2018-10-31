@@ -1,6 +1,0 @@
-Types of probabilities:
-# 1: sum of probs of cluster by sum of probs over all retained clusters that are mapped on to an r1 cluster.
-# 2: population of cluster by sum of populations of all retained clusters that are mapped on to an r1 cluster.
-# 3: average of cluster by sum of averages of all retained clusters. NOT USED any more. 
-# 4: clustering both model and target ensembles to get the same number of clusters?? E.g. 5 clusters?  
-# 5: comparing the prob of a target ensemble GSM with the prob of a GSM in the model ensemble. Target GSMs are normalized like usual. Model ensemble GSMs are normalized by sum over all GSMs that are mapped. 
