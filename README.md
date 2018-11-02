@@ -2,7 +2,7 @@ This repository is meant to be used as an [IMP](https://integrativemodeling.org)
 It implements a method for obtaining an optimal coarse-grained bead representation for a given system, given input data, scoring functions, and sampling scheme, using an incremental coarse-graining algorithm (see publications below). 
 
 ## Note
-See the wiki pages in this repo for details on how to use this module.
+See the wiki pages in this repo for details on how to use this module.\
 Also see https://salilab.org/optimal_representation for examples using this module. 
 
 ## Prerequisites 
