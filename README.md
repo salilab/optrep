@@ -1,7 +1,7 @@
 This repository is meant to be used as an [IMP](https://integrativemodeling.org) (*Integrative Modeling Platform*) module. 
 It implements a method for obtaining an optimal coarse-grained bead representation for a given system, given input data, scoring functions, and sampling scheme, using an incremental coarse-graining algorithm (see publications below). 
 
-*See the wiki pages for details on how to use this module.*
+_See the wiki pages for details on how to use this module._
 
 ## Prerequisites 
 Note that a patch was applied to the `dof/__init__.py` file in IMP's PMI module (`pmi/pyext/src/`). The patched file can be found in [prereqs/pmi/pyext/src/dof/__init__.py](prereqs/pmi/pyext/src/dof/__init__.py). 
