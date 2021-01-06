@@ -15,13 +15,15 @@ This patch will be committed to the master branch of IMP in a subsequent version
 ## Information
 _Author(s)_: Shruthi Viswanath 
 
-_Maintainer_: shruthivis
+_Maintainer_: `benmwebb`
 
 _Date_: October 31st, 2018 
 
-_License_: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
-International License.
+_License_: [LGPL](http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
 
 _Testable_: Yes.
 
