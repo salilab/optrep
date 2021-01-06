@@ -1,4 +1,4 @@
-
+from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
@@ -149,10 +149,11 @@ class GoodScoringModelSelector(object):
 
                         if model_satisfies:
                             self.all_good_scoring_models.append((runid,replicaid,frameid))
-                            print >>outf,len(self.all_good_scoring_models)-1,runid,replicaid,frameid,
+                            print(len(self.all_good_scoring_models)-1,runid,
+                                  replicaid,frameid, end=' ', file=outf)
                             for mcv in model_criteria_values:
-                                print >>outf,"%.2f" %(mcv),
-                            print >>outf
+                                print("%.2f" %(mcv), end=' ', file=outf)
+                            print(file=outf)
         
                     rsf.close()
 
@@ -185,9 +186,9 @@ class GoodScoringModelSelector(object):
             sample2_indices=[i for i in range(self.all_good_scoring_models) if i not in sample1_indices]
 
         # write model and sample IDs to a file
-        f=open(os.path.join(self.run_dir,'good_scoring_models','model_sample_ids.txt'),'w')
-        for i in sample1_indices:
-            print >>f,i,1
-        for i in sample2_indices:
-            print >>f,i,2
-        f.close()
+        with open(os.path.join(self.run_dir,'good_scoring_models',
+                               'model_sample_ids.txt'),'w') as f:
+            for i in sample1_indices:
+                print(i, 1, file=f)
+            for i in sample2_indices:
+                print (i, 2, file=f)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import IMP
 import IMP.optrep
 #import IMP.optrep.SamplingPrecisionEstimator
@@ -31,14 +32,11 @@ def sort_beads_by_index(bead_precisions_dict):
     return bead_precisions_dict
 
 def output_precisions_to_file(bead_precisions,all_beads_output_file):
-
-    abof = open(all_beads_output_file,'w')
-
-    for (prot,dom) in bead_precisions:
-    
-        for bead_data in bead_precisions[(prot,dom)]:
-            print >>abof,prot,dom,bead_data[0],bead_data[1],bead_data[2]
-    abof.close()
+    with open(all_beads_output_file, 'w') as abof:
+        for (prot,dom) in bead_precisions:
+            for bead_data in bead_precisions[(prot,dom)]:
+                print(prot,dom,bead_data[0],bead_data[1],bead_data[2],
+                      file=abof)
   
 def populate_bead_precisions(bead_precisions_dict,num_cores,input_file_prefix):
     

@@ -1,4 +1,4 @@
-
+from __future__ import print_function
 import IMP
 import IMP.optrep
 import IMP.optrep.BeadMapBuilder
@@ -57,7 +57,7 @@ def set_next_beadmap():
       
         # make sure the proteins for which we are not changing representation remain exactly same as before
         if not updated:
-            print "Process converged."
+            print("Process converged.")
             return
             
     #next_iteration_sampling_dir = "r"+str(args.next_resolution)

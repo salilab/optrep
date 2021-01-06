@@ -1,3 +1,4 @@
+from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
@@ -333,13 +334,10 @@ class SamplingPrecisionEstimator(object):
     def print_bead_precisions(self,out_file_name):
         ''' write bead index, bead precision and whether it is an imprecise bead to a file. '''
 
-        out_file=open(out_file_name,'w')
-    
-        for protein_domain_key in self.bead_precisions:
-            for bead_index in range(len(self.bead_precisions[protein_domain_key])):
-                print >>out_file,protein_domain_key[0],protein_domain_key[1],bead_index,"%.2f" %(self.bead_precisions[protein_domain_key][bead_index]),int(self.bead_imprecise[protein_domain_key][bead_index])
-
-        out_file.close()
+        with open(out_file_name,'w') as out_file:
+            for protein_domain_key in self.bead_precisions:
+                for bead_index in range(len(self.bead_precisions[protein_domain_key])):
+                    print(protein_domain_key[0], protein_domain_key[1],bead_index, "%.2f" %(self.bead_precisions[protein_domain_key][bead_index]), int(self.bead_imprecise[protein_domain_key][bead_index]), file=out_file)
     
     def estimate_perbead_sampling_precision(self,grid_size=1.0):
         ''' For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.

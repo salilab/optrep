@@ -1,3 +1,4 @@
+from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
@@ -197,17 +198,14 @@ class BeadMapBuilder(object):
     def write_bead_map_to_file(self,output_file):
         ''' Write bead maps to file. Need to access this in the case of the next iteration of coarse-graining.
         '''
-        f=open(output_file,'w')
-        
-        for p in sorted(self.bead_maps):
-            for bead in sorted(self.bead_maps[p]):
-                print >>f,p[0],p[1],bead[0],bead[1]
-             
-        f.close()
+        with open(output_file, 'w') as f:
+            for p in sorted(self.bead_maps):
+                for bead in sorted(self.bead_maps[p]):
+                    print(p[0],p[1],bead[0],bead[1], file=f)
                
     def show_bead_map(self):
         ''' Output on the screen.'''
         for p in self.bead_maps:
             for bead in self.bead_maps[p]:
-                print p[0],p[1],bead[0],bead[1]
+                print(p[0],p[1],bead[0],bead[1])
 
