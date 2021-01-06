@@ -117,7 +117,7 @@ void SPE::load_coordinates_and_bead_sizes_from_model_files(bool break_after_firs
     Assuming same hierarchy for all models of a given sampling run. */
     IMP_NEW(Model, m, ());
     
-    String mdl_0 = models_dir_ + std::to_string(static_cast<long long>(0)) + ".rmf3";
+    String mdl_0 = models_dir_ + "/" + std::to_string(static_cast<long long>(0)) + ".rmf3";
     
     RMF::FileConstHandle fh_0=RMF::open_rmf_file_read_only(mdl_0);
     
