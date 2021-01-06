@@ -32,7 +32,7 @@ class Tests(IMP.test.TestCase):
 
         spe.estimate_all_beads_sampling_precision(grid_size=2.0)
 
-        spe.get_all_imprecise_beads(xscale=1.0)
+        spe.get_all_imprecise_beads(xscale=1.0, linear_cutoff=1.0)
 
         spe.print_all_bead_precisions("bead_precisions_cpp.dat")
 
