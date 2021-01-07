@@ -1,0 +1,24 @@
+value_object_exceptions=["ProteinDomainList"]
+show_exceptions=["ProteinDomainList"]
+function_name_exceptions=[
+    'ProteinDomainList.append',
+    'ProteinDomainList.assign',
+    'ProteinDomainList.back',
+    'ProteinDomainList.begin',
+    'ProteinDomainList.capacity',
+    'ProteinDomainList.empty',
+    'ProteinDomainList.end',
+    'ProteinDomainList.erase',
+    'ProteinDomainList.front',
+    'ProteinDomainList.insert',
+    'ProteinDomainList.iterator',
+    'ProteinDomainList.rbegin',
+    'ProteinDomainList.rend',
+    'ProteinDomainList.resize',
+    'ProteinDomainList.size',
+    'SPE.estimate_all_beads_sampling_precision',
+    'SPE.print_all_bead_precisions',
+    'SPE.print_precision_for_range_of_beads',
+    'SPE.print_to_file_precision_for_range_of_beads']
+
+
