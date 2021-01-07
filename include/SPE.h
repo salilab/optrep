@@ -25,7 +25,7 @@ class Cluster;
 
 class ChiSquareTestResult;
 
-class IMPOPTREPEXPORT SPE {
+class IMPOPTREPEXPORT SPE : public IMP::Object {
  public:
 /* required for manager in parallel environment to assign tasks. 
   * Also used by some of the mono methods (non-parallel) */
@@ -119,10 +119,10 @@ Float estimate_single_bead_precision(const unsigned int global_bead_index,const 
 bool is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale,const Float linear_cutoff) const ;
 
 
-//IMP_OBJECT_METHODS(SPE);
-
-
+  IMP_OBJECT_METHODS(SPE);
 };
+
+IMP_OBJECTS(SPE, SPEs);
 
 IMPOPTREP_END_NAMESPACE
 

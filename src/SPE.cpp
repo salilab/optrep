@@ -22,8 +22,9 @@
 
 IMPOPTREP_BEGIN_NAMESPACE
 
-SPE::SPE(const String topology_file, const String gsm_directory,const std::vector<std::pair<String, String > > input_components_calculate_precision) {
-        
+SPE::SPE(const String topology_file, const String gsm_directory,
+         const std::vector<std::pair<String, String > >
+              input_components_calculate_precision) : Object("SPE%1%") {
 models_dir_=gsm_directory;
 
 order_components_by_topology_file_and_add_residue_range(input_components_calculate_precision, topology_file);
