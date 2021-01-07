@@ -12,6 +12,7 @@ import IMP.parallel
 import parallel_tasks
 
 class Tests(IMP.test.TestCase):
+    @IMP.test.skip("takes too long to run")
     def test_parallel_spe(self):
         """Test parallel SPE"""
         # Hard-code number of cores for test
