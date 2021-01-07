@@ -2,8 +2,7 @@ from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
-import subprocess
-from subprocess import Popen
+from IMP.sampcon.good_scoring_model_selector import rmf_slice
 import os,sys,string,math
 import shutil
 import random
@@ -66,7 +65,8 @@ class GoodScoringModelSelector(object):
             return True
         return False
 
-    def _extract_models_from_trajectories(self,output_dir): 
+    def _extract_models_from_trajectories(self, output_dir, num_runs,
+                                          total_num_frames):
         ''' Given the list of all good-scoring model indices, extract their frames and store them ordered by the list index.
         '''
         
@@ -75,13 +75,10 @@ class GoodScoringModelSelector(object):
             
             trajfile=os.path.join(self.run_dir,self.run_prefix+runid,'output','rmfs',replicaid+'.rmf3')
 
-            slice_location=os.path.join(os.environ['IMP_BIN_DIR'],'rmf_slice')
-            
-            #rmf_slice=Popen([slice_location,trajfile,"-f",str(frameid),os.path.join(output_dir,str(i)+'.rmf3')])
-            #out,err=rmf_slice.communicate()
-            
-            rmf_slice = subprocess.call([slice_location,trajfile,"-f",str(frameid),os.path.join(output_dir,str(i)+'.rmf3')])
-            
+            rmf_slice(trajfile, frameid,
+                      os.path.join(output_dir,str(i)+'.rmf3'),
+                      num_runs, total_num_frames,
+                      len(self.all_good_scoring_models))
             
 
     def get_good_scoring_models(self,criteria_list=[],keywords_list=[],aggregate_lower_thresholds=[],
@@ -103,12 +100,15 @@ class GoodScoringModelSelector(object):
         
         outf=open(os.path.join(output_dir,"model_ids_scores.txt"),'w')
       
+        num_runs = 0
+        total_num_frames = 0
         for each_run_dir in sorted(os.listdir(self.run_dir)):  
          
             if not each_run_dir.startswith(self.run_prefix):
                 continue
 
             runid=each_run_dir.split(self.run_prefix)[1]
+            num_runs += 1
            
             for each_replica_stat_file in sorted(glob.glob(os.path.join(self.run_dir,each_run_dir,"output")+"/stat.*.out")):
                             
@@ -127,6 +127,7 @@ class GoodScoringModelSelector(object):
 
                         dat=eval(each_model_line.strip())
                         
+                        total_num_frames += 1
                         model_satisfies=False
                         model_criteria_values=[]
                                                 
@@ -157,7 +158,8 @@ class GoodScoringModelSelector(object):
         
                     rsf.close()
 
-        self._extract_models_from_trajectories(output_dir) 
+        self._extract_models_from_trajectories(output_dir, num_runs,
+                                               total_num_frames)
         
         self.split_good_scoring_models_into_two_subsets(split_type="divide_by_run_ids")
 
