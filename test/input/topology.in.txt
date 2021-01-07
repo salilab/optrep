@@ -1,2 +1,2 @@
-A A_1 1 87 A.pdb A
-B B_1 1 87 B.pdb B
+A A_1 A 1AVX_A 1 87 A.pdb A 1 red
+B B_1 B 1AVX_B 1 87 B.pdb B 1 blue

@@ -33,22 +33,22 @@ class Tests(IMP.test.TestCase):
         # incrementally CG
         components_to_update_1=[("B","B_1")]
 
-        imprecise_bead_list_1={("B","B_1"):[0,1,10,20,30,60]}
+        imprecise_beads_file = self.get_input_file_name("imprecise_beads_B.txt")
+        bm.set_imprecise_beads_from_file(imprecise_beads_file)
 
-        bm.set_imprecise_beads(imprecise_bead_list_1)
-
-        updated = bm.update_all_bead_maps(components_to_update_1,5)
+        updated = bm.update_all_bead_maps(5)
 
         if updated:
             bm.show_bead_map()
 
         #another CG
         components_to_update_2=[("A","A_1")]
-        imprecise_bead_list_2={("A","A_1"):[0,10]}
 
-        bm2.set_imprecise_beads(imprecise_bead_list_2)
+        imprecise_beads_file = self.get_input_file_name("imprecise_beads_A.txt")
 
-        updated = bm2.update_all_bead_maps(components_to_update_2,3)
+        bm2.set_imprecise_beads_from_file(imprecise_beads_file)
+
+        updated = bm2.update_all_bead_maps(3)
 
 
         if updated:
