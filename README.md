@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/salilab/optrep/workflows/build/badge.svg?branch=main)](https://github.com/salilab/optrep/actions?query=workflow%3Abuild)
+[![codecov](https://codecov.io/gh/salilab/optrep/branch/main/graph/badge.svg)](https://codecov.io/gh/salilab/pmi)
+
 This repository is meant to be used as an [IMP](https://integrativemodeling.org) (*Integrative Modeling Platform*) module. 
 It implements a method for obtaining an optimal coarse-grained bead representation for a given system, given input data, scoring functions, and sampling scheme, using an incremental coarse-graining algorithm (see publications below). 
 
