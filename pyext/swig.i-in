@@ -3,6 +3,7 @@
 //IMP_SWIG_VALUE_TEMPLATE(IMP::example, ExampleTemplateClassD)
 
 IMP_SWIG_OBJECT(IMP::optrep, Cluster, Clusters);
+IMP_SWIG_OBJECT(IMP::optrep, DistanceMatrix, DistanceMatrixList);
 IMP_SWIG_OBJECT(IMP::optrep, SPE, SPEs);
 
 %import "RMF.i"
