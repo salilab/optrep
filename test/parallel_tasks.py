@@ -10,13 +10,13 @@ def slave_setup():
     
     return()
 
-def master_setup(components_to_update):
+def master_setup(components_to_update, topology, gsm):
     """ 
     Given a set of protein/domain components, find the total number of beads across proteins.
     """ 
     # outer () is for argument, [] is for vector, inner () is for string pair.
 
-    spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
+    spe=IMP.optrep.SPE(topology, gsm, components_to_update)
     
     spe.load_coordinates_and_bead_sizes_from_model_files(True) # loads only first model to get the number of beads in the system. 
     
@@ -30,11 +30,13 @@ def master_setup(components_to_update):
 
 class SlaveTask(object):
 
-    def __init__(self,grid_size, xscale,start_bead_index,end_bead_index):
+    def __init__(self,grid_size, xscale,start_bead_index,end_bead_index,
+                 topology, gsm):
         self.grid_size = grid_size
         self.xscale=xscale
         self.start_bead_index=start_bead_index
-        self.end_bead_index=end_bead_index
+        self.end_bead_index=max(end_bead_index, start_bead_index)
+        self.topology, self.gsm = topology, gsm
      
         
     def __call__(self):
@@ -51,12 +53,12 @@ class SlaveTask(object):
         components_to_update=IMP.optrep.ProteinDomainList([("B","B_1")])
         
         
-        spe=IMP.optrep.SPE("input/1SYX/1SYX.topology.txt","input/1SYX/good_scoring_models/",components_to_update)
+        spe=IMP.optrep.SPE(self.topology, self.gsm, components_to_update)
     
         spe.load_coordinates_and_bead_sizes_from_model_files()
         
         bead_precision_output_list = spe.print_precision_for_range_of_beads(self.start_bead_index, self.end_bead_index,
-self.grid_size, self.xscale)
+self.grid_size, self.xscale, linear_cutoff=1.0)
                         
         return(bead_precision_output_list)
         #for out_str in bead_precision_output_list:
