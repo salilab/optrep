@@ -1,12 +1,7 @@
 from __future__ import print_function
 import IMP.test
 import IMP
-import IMP.atom
-import IMP.rmf
-import IMP.pmi
-import IMP.pmi.tools
-import IMP.pmi.topology
-import os,sys,string,math
+import math
 import IMP.optrep
 import IMP.parallel
 import parallel_tasks

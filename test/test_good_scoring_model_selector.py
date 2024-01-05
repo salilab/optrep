@@ -1,4 +1,3 @@
-import RMF
 import IMP.test
 import shutil
 import os

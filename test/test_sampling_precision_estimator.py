@@ -1,12 +1,5 @@
-from __future__ import print_function, division
 import IMP.test
 import IMP
-import IMP.atom
-import IMP.rmf
-import IMP.pmi
-import IMP.pmi.tools
-import IMP.pmi.topology
-import os,sys,string,math
 import IMP.optrep.SamplingPrecisionEstimator
 
 class Tests(IMP.test.TestCase):
