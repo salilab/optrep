@@ -29,7 +29,7 @@ def master_setup(components_to_update,run_dir,topology_file):
 # master to the slaves.
 
 
-class SlaveTask(object):
+class SlaveTask:
 
     def __init__(self,components_to_update,topology_file,run_dir,grid_size, xscale,linear_cutoff,start_bead_index,end_bead_index):
    

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
@@ -8,7 +7,7 @@ import shutil
 import random
 import glob
 
-class GoodScoringModelSelector(object):
+class GoodScoringModelSelector:
     # Authors: Shruthi Viswanath
     
     ''' Select good-scoring models based on scores and/or data satisfaction.

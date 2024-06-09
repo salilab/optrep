@@ -13,7 +13,6 @@ rigidly but is not always constrained to be rigid (so you can later move the par
 * If you are running MD, you have to separately pass the particles (also returned from DegreesOfFreedom.setup_md()) to the `molecular_dynamics_sample_objects` argument of [ReplicaExchange0](@ref IMP::pmi::macros::ReplicaExchange0). Check out an [MD example here](pmi_2atomistic_8py-example.html).
 """
 
-from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.algebra
@@ -32,7 +31,7 @@ def create_rigid_body_movers(dof,maxtrans,maxrot):
                                                maxtrans, maxrot))
     return mvs
 
-class DegreesOfFreedom(object):
+class DegreesOfFreedom:
     """A class to simplify create of constraints and movers for an IMP Hierarchy.
     Call the various create() functions to get started.
     Can get all enabled movers with get_movers(). Pass this to ReplicaExchange0.

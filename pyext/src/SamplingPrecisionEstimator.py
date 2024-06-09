@@ -1,4 +1,3 @@
-from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
@@ -9,7 +8,7 @@ import numpy
 import shutil
 import scipy.stats
 
-class SamplingPrecisionEstimator(object):
+class SamplingPrecisionEstimator:
     # Authors: Shruthi Viswanath
     
     ''' Given a set of good-scoring model, estimate the bead-wise sampling precision.

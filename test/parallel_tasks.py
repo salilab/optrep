@@ -28,7 +28,7 @@ def master_setup(components_to_update, topology, gsm):
 # master to the slaves.
 
 
-class SlaveTask(object):
+class SlaveTask:
 
     def __init__(self,grid_size, xscale,start_bead_index,end_bead_index,
                  topology, gsm):

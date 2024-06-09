@@ -1,4 +1,3 @@
-from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.rmf
@@ -7,7 +6,7 @@ import IMP.pmi.tools
 import IMP.pmi.topology
 import os,sys,string,math
  	
-class BeadMapBuilder(object):
+class BeadMapBuilder:
     # Authors: Shruthi Viswanath
     
     ''' Setup the bead to residue map given a topology file, for a given molecule.

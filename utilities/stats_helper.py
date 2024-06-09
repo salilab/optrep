@@ -285,7 +285,7 @@ def percent_ensemble_explained(ctable,total_num_models):
         
         return percent_clustered
     
-class Violations(object):
+class Violations:
 
     def __init__(self, threshold,xlink_keyword,example_file):
 
