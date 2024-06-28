@@ -35,4 +35,6 @@ jobs:
         cmake .. -DIMP_DIR=${CONDA_PREFIX}/lib/cmake/IMP -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage"
         make
         ./setup_environment.sh py.test --cov=.. --cov-branch --cov-report=xml -v ../test/test_*.py test/*/*.py
-    - uses: codecov/codecov-action@v1
+    - uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
