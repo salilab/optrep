@@ -41,7 +41,7 @@ SPE(const String topology_file, const String gsm_directory,const std::vector<std
 
 void load_coordinates_and_bead_sizes_from_model_files(bool break_after_first_model=false); 
 
-/* this was for mono (unparallellized) code. Runningall ona a single core */ 
+/* this was for mono (unparallelized) code. Runningall ona a single core */
 void estimate_all_beads_sampling_precision(const Float grid_size=1.0);
 
 void get_all_imprecise_beads(const Float xscale,const Float linear_cutoff);
@@ -50,7 +50,7 @@ void print_all_bead_precisions(const std::string out_file_name) const ;
 
 /*end API for mono code*/
 
-/* this is for parallellized code. 1 core per bead. */
+/* this is for parallelized code. 1 core per bead. */
 String get_single_bead_precision_output(const unsigned int global_bead_index,const Float grid_size=1.0, const  Float xscale=1.0, const Float linear_cutoff=2.0) const;
 /* designed return value as a string, as python is capable of parsing it. It could have been an object or an IMP_NAED_TUPLE_3 though */
 

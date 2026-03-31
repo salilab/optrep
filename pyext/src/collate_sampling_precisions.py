@@ -11,7 +11,7 @@ def parse_args():
     
     parser.add_argument("-n","--number_of_cores",dest="num_cores",type=int,help="the total number of cores for the parallel sampling precision estimation")
     
-    parser.add_argument("-pl","--protein_list",dest="proteins_to_update",nargs="+",type=str,help="proteins to calcualte precision on")
+    parser.add_argument("-pl","--protein_list",dest="proteins_to_update",nargs="+",type=str,help="proteins to calculate precision on")
     
     parser.add_argument("-dl","--domain_list",dest="domains_to_update",nargs="+",type=str,help="domain to calculate precision on")
   

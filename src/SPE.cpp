@@ -320,7 +320,7 @@ IMP::Vector<IMP::optrep::Cluster*> SPE::precision_cluster(const Floats& distmat,
              //update neighbors 
              for(Ints::iterator ne=neighbors[curr_center].begin();ne!=neighbors[curr_center].end();ne++) {
                  //removes the neighbor from the pool
-                 unclustered.erase(std::remove(unclustered.begin(),unclustered.end(),*ne), unclustered.end()); //first occurence of n is removed. 
+                 unclustered.erase(std::remove(unclustered.begin(),unclustered.end(),*ne), unclustered.end()); //first occurrence of n is removed.
                  boolUnclustered[*ne]=false; // clustered
               }
 
@@ -530,7 +530,7 @@ Float SPE::estimate_single_bead_precision(const unsigned int global_bead_index,c
 }
 
 bool SPE::is_commensurate(const Float bead_diameter,const Float bead_precision,const Float xscale, const Float linear_cutoff) const {
-    /* Check if the sampling precision of the bead is atmost xscale times the bead_diameter.
+    /* Check if the sampling precision of the bead is at most xscale times the bead_diameter.
     If not the bead is imprecise and needs to be coarse-grained.
     */
     if (bead_precision> xscale*bead_diameter + linear_cutoff) { //not just larger, but significantly larger than the representation precision

@@ -26,7 +26,7 @@ class SamplingPrecisionEstimator:
         self.models_by_sample={1:[],2:[]}
 
         self.components_calculate_precision=components_calculate_precision
-        self.bead_coords={}# store the coordinates of each model acoording to the bead index.
+        self.bead_coords={}# store the coordinates of each model according to the bead index.
         # This dictionary is indexed by a protein domain. The elements are lists of lists. 
         # Each list corresponds to a bead and is the list of all coordinates of good-scoring models corresponding to that bead.
 
@@ -204,7 +204,7 @@ class SamplingPrecisionEstimator:
             #update neighbors 
             for n in neighbors[currcenter]:
                 #removes the neighbor from the pool
-                unclustered.remove(n) #first occurence of n is removed. 
+                unclustered.remove(n) #first occurrence of n is removed.
                 boolUnclustered[n]=False # clustered
 
             for n in neighbors[currcenter]:
@@ -308,7 +308,7 @@ class SamplingPrecisionEstimator:
         return sampling_precision
 
     def is_commensurate(self,bead_diameter,bead_precision,xscale):
-        ''' Check if the sampling precision of the bead is atmost xscale times the bead_diameter.
+        ''' Check if the sampling precision of the bead is at most xscale times the bead_diameter.
         If not the bead is imprecise and needs to be coarse-grained.
         '''
         linear_cutoff =2.0

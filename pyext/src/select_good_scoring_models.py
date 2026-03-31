@@ -11,7 +11,7 @@ def parse_args():
     
     parser = argparse.ArgumentParser(description="List and extract good-scoring models from a set of sampling runs. Example of usage: select_good_scoring_models.py -rd <run_directory_for_sampling> -rp <run_prefix> -gs <grid_size>. Flag -h for more details.")
     
-    parser.add_argument("-rd","--run_directory",dest="run_dir",help="directory in whcih sampling results are stored") 
+    parser.add_argument("-rd","--run_directory",dest="run_dir",help="directory in which sampling results are stored")
     
     parser.add_argument("-rp","--run_prefix",dest="run_prefix",help="prefix of runs") 
                         
