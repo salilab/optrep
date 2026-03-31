@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: true
     - name: Setup conda and dependencies
@@ -37,6 +37,6 @@ jobs:
         cmake .. -DIMP_DIR=${CONDA_PREFIX}/lib/cmake/IMP -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage"
         make
         ./setup_environment.sh py.test --cov=.. --cov-branch --cov-report=xml -v ../test/test_*.py test/*/*.py
-    - uses: codecov/codecov-action@v5
+    - uses: codecov/codecov-action@v6
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
