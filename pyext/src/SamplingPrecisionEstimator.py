@@ -10,10 +10,10 @@ import scipy.stats
 
 class SamplingPrecisionEstimator:
     # Authors: Shruthi Viswanath
-    
+
     ''' Given a set of good-scoring model, estimate the bead-wise sampling precision.
     '''
-    
+
     def __init__(self,gsm_directory,components_calculate_precision=[]):
         """Constructor.
         @param gsm_directory the directory containing good-scoring models. Should also contain the sample id file,
@@ -48,24 +48,24 @@ class SamplingPrecisionEstimator:
 
     def get_models_by_sample(self,sample_id_file):
         ''' Get the mapping of model index to sample number. '''
-        
+
         sif=open(sample_id_file,'r')
 
         for ln in sif.readlines():
             model_index=int(ln.strip().split()[0])
             sample_number=int(ln.strip().split()[1])
-        
+
             self.models_by_sample[sample_number].append(model_index)
-        
+
         self.total_num_models = len(self.models_by_sample[1])+len(self.models_by_sample[2])
-        
+
         sif.close()
-        
+
     def _included_protein_domain(self,chain_full_name,protein_domain_list):
         ''' Check if the current chain should be included for calculating bead precisions, based on the list of protein domains mentioned. 
         '''
         for protein_domain in protein_domain_list:
-            
+
             protein=protein_domain[0]
             if protein in chain_full_name:
                 return protein_domain
@@ -86,9 +86,9 @@ class SamplingPrecisionEstimator:
         for i in range(self.total_num_models): # the models in the good_scoring_model dir are called 0.rmf3, 1.rmf3 and so on.. 
             m=IMP.Model()
             mdl_i=os.path.join(self.models_dir,str(i)+'.rmf3')
-    
+
             fh_i=RMF.open_rmf_file_read_only(mdl_i)
-    
+
             hier_i=IMP.rmf.create_hierarchies(fh_i,m)[0]
 
             IMP.rmf.load_frame(fh_i, 0)
@@ -100,7 +100,7 @@ class SamplingPrecisionEstimator:
 
                     if not protein_domain_key:
                         continue
-                    
+
                     for a in IMP.atom.get_leaves(chain_i):
                         curr_coords=IMP.core.XYZR(a).get_coordinates()
                         curr_dia=IMP.core.XYZR(a).get_radius()*2.0
@@ -110,16 +110,16 @@ class SamplingPrecisionEstimator:
                             self.bead_diameter[protein_domain_key].append(curr_dia) # assuming it is same for all models. In future versions this could be different for each model
                         else:
                             self.bead_coords[protein_domain_key][bead_index].append(curr_coords)
-                
+
                         # in any case increment bead index
                         bead_index += 1
 
             del m,hier_i
-       
+
     def get_all_vs_all_distances(self,protein_domain_key,bead_index):
         ''' Return the distance matrix, minimum and maximum distance per bead.
         '''
-        
+
         distmat=numpy.zeros((self.total_num_models,self.total_num_models))
         #get the all vs all distance matrix, and minimum and maximum distances, of the bead index
 
@@ -129,10 +129,10 @@ class SamplingPrecisionEstimator:
         for i in range(self.total_num_models-1):
             for j in range(i+1,self.total_num_models):     
                 #dist=IMP.algebra.get_rmsd(IMP.algebra.Vector3Ds([self.bead_coords[protein_domain_key][bead_index][i]]),IMP.algebra.Vector3Ds([self.bead_coords[protein_domain_key][bead_index][j]]))
-                
+
                 dist=IMP.algebra.get_distance(self.bead_coords[protein_domain_key][bead_index][i],self.bead_coords[protein_domain_key][bead_index][j])
                 distmat[i][j]=dist
-                
+
                 #print dist
 
                 if dist<mindist:
@@ -140,7 +140,7 @@ class SamplingPrecisionEstimator:
 
                 if dist>maxdist:
                     maxdist=dist
-                
+
         return (distmat,mindist,maxdist)
 
 
@@ -214,7 +214,7 @@ class SamplingPrecisionEstimator:
                     neighbors[unn].remove(n)
 
         return cluster_centers,cluster_members
-                                                                                                 
+
     def get_contingency_table(self,cluster_members,sample1_models,sample2_models):
         ''' Given the clustering and the identity of models in run1 and run2 creates the contingency table
         with 1 row per cluster and 1 column per sample.
@@ -263,7 +263,7 @@ class SamplingPrecisionEstimator:
         ct = numpy.transpose(contingency_table)
 
         [chisquare,pvalue,dof,expected]=scipy.stats.chi2_contingency(ct)
-        
+
         #print expected,contingency_table, chisquare
 
         if dof==0.0:
@@ -276,19 +276,19 @@ class SamplingPrecisionEstimator:
     def estimate_single_bead_precision(self,protein_domain_key,bead_index,grid_size):
         ''' Estimate the sampling precision of the bead_index-th bead of protein domain.
         '''
-      
+
         (distmat_bead,mindist_bead,maxdist_bead)=self.get_all_vs_all_distances(protein_domain_key,bead_index)
 
         #cutoffs=numpy.arange(mindist_bead,maxdist_bead,grid_size)
         cutoffs=numpy.arange(0.0,maxdist_bead,grid_size) # the minimum distance is different for different beads, so standardizing it
-            
+
         pvals=[]
         cramersv=[]
         populations=[]
 
         for c in cutoffs:
             #print "cutoff ",c
-            
+
             cluster_centers,cluster_members=self.precision_cluster(distmat_bead,c)
 
             ctable,retained_clusters=self.get_contingency_table(cluster_members,self.models_by_sample[1],self.models_by_sample[2]) #TODO note that some of these are class members. But I am keeping this general and passing them as arguments for the case where we cluster on subsets of models
@@ -296,15 +296,15 @@ class SamplingPrecisionEstimator:
             (pval,crv)=self.test_sampling_exhaustiveness(ctable,self.total_num_models)
 
             percent_explained= self.percent_ensemble_explained(ctable,self.total_num_models)
- 
+
             pvals.append(pval)
             cramersv.append(crv)
             populations.append(percent_explained)
-            
+
             #print c,pval,crv,percent_explained
 
         sampling_precision = self.get_sampling_precision(cutoffs,pvals,cramersv,populations)
-      
+
         return sampling_precision
 
     def is_commensurate(self,bead_diameter,bead_precision,xscale):
@@ -315,8 +315,8 @@ class SamplingPrecisionEstimator:
         if bead_precision> xscale*bead_diameter + linear_cutoff : # not just larger, but significantly larger than the representation precision
             return False
         return True
-              
-        
+
+
     def get_imprecise_beads(self,xscale):
         ''' For each bead check if its size is commensurate with the sampling precision.
         If not, mark it as imprecise. 
@@ -337,7 +337,7 @@ class SamplingPrecisionEstimator:
             for protein_domain_key in self.bead_precisions:
                 for bead_index in range(len(self.bead_precisions[protein_domain_key])):
                     print(protein_domain_key[0], protein_domain_key[1],bead_index, "%.2f" %(self.bead_precisions[protein_domain_key][bead_index]), int(self.bead_imprecise[protein_domain_key][bead_index]), file=out_file)
-    
+
     def estimate_perbead_sampling_precision(self,grid_size=1.0):
         ''' For each required bead (selection residues mentioned in the class constructor), computes the sampling precision.
         Results are stored in the object's bead_precisions dictionary
@@ -346,4 +346,3 @@ class SamplingPrecisionEstimator:
         for protein_domain_key in self.components_calculate_precision:
             for bead_index in range(len(self.bead_diameter[protein_domain_key])):
                 self.bead_precisions[protein_domain_key].append(self.estimate_single_bead_precision(protein_domain_key,bead_index,grid_size))
-                

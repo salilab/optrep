@@ -9,11 +9,11 @@ import glob
 
 class GoodScoringModelSelector:
     # Authors: Shruthi Viswanath
-    
+
     ''' Select good-scoring models based on scores and/or data satisfaction.
     Exrtact the corresponding RMFs and put them in a separate directory
     '''
-    
+
     def __init__(self,run_directory,run_prefix):
         """Constructor.
         @param run_directory the directory containing subdirectories of runs
@@ -34,7 +34,7 @@ class GoodScoringModelSelector:
                     fields_for_criteria[ki].append(fh_index)
 
         return fields_for_criteria
-    
+
     def _get_crosslink_satisfaction(self,crosslink_distance_values,crosslink_percentage_lower_threshold,
                                      crosslink_percentage_upper_threshold,xlink_distance_lower_threshold,xlink_distance_upper_threshold):
         ''' For crosslinks, we want models with at least x% (e.g. 90%) or more crosslink satisfaction. A crosslink is satisfied if the distance is between the lower and upper distance thresholds
@@ -56,7 +56,7 @@ class GoodScoringModelSelector:
         else:
             return percent_satisfied,False
 
-    
+
     def _get_score_satisfaction(self,score,lower_threshold,upper_threshold):
         ''' Check if the score is within the thresholds
         '''
@@ -68,17 +68,17 @@ class GoodScoringModelSelector:
                                           total_num_frames):
         ''' Given the list of all good-scoring model indices, extract their frames and store them ordered by the list index.
         '''
-        
+
         for i,gsm in enumerate(self.all_good_scoring_models):
             (runid,replicaid,frameid)=gsm 
-            
+
             trajfile=os.path.join(self.run_dir,self.run_prefix+runid,'output','rmfs',replicaid+'.rmf3')
 
             rmf_slice(trajfile, frameid,
                       os.path.join(output_dir,str(i)+'.rmf3'),
                       num_runs, total_num_frames,
                       len(self.all_good_scoring_models))
-            
+
 
     def get_good_scoring_models(self,criteria_list=[],keywords_list=[],aggregate_lower_thresholds=[],
                                         aggregate_upper_thresholds=[],member_lower_thresholds=[],member_upper_thresholds=[]): 
@@ -96,46 +96,46 @@ class GoodScoringModelSelector:
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir, ignore_errors=True)
         os.mkdir(output_dir)
-        
+
         outf=open(os.path.join(output_dir,"model_ids_scores.txt"),'w')
-      
+
         num_runs = 0
         total_num_frames = 0
         for each_run_dir in sorted(os.listdir(self.run_dir)):  
-         
+
             if not each_run_dir.startswith(self.run_prefix):
                 continue
 
             runid=each_run_dir.split(self.run_prefix)[1]
             num_runs += 1
-           
+
             for each_replica_stat_file in sorted(glob.glob(os.path.join(self.run_dir,each_run_dir,"output")+"/stat.*.out")):
-                            
+
                     replicaid=each_replica_stat_file.strip(".out").split(".")[-1]
 
                     rsf=open(each_replica_stat_file,'r')
-                    
+
                     for line_index,each_model_line in enumerate(rsf.readlines()): # for each model in the current replica
-                        
+
                         if line_index==0:
                             field_headers=eval(each_model_line.strip())
                             fields_for_criteria=self._get_subfields_for_criteria(field_headers,keywords_list)
                             continue
-                        
+
                         frameid=line_index-1
 
                         dat=eval(each_model_line.strip())
-                        
+
                         total_num_frames += 1
                         model_satisfies=False
                         model_criteria_values=[]
-                                                
+
                         for si,score_type in enumerate(criteria_list):
                             if "crosslink" in score_type.lower():
                                 crosslink_distance_values=[float(dat[j]) for j in fields_for_criteria[si]] # TODO : consider ambiguity
-                      
+
                                 satisfied_percent,model_satisfies=self._get_crosslink_satisfaction(crosslink_distance_values,aggregate_lower_thresholds[si],aggregate_upper_thresholds[si],member_lower_thresholds[si],member_upper_thresholds[si])
-                                
+
                                 model_criteria_values.append(satisfied_percent)
 
                             elif "score" in score_type.lower():
@@ -143,7 +143,7 @@ class GoodScoringModelSelector:
 
                                 model_satisfies=self._get_score_satisfaction(score_value,aggregate_lower_thresholds[si],aggregate_upper_thresholds[si])
                                 model_criteria_values.append(score_value)
-                      
+
                             if not model_satisfies:
                                 break
 
@@ -154,15 +154,15 @@ class GoodScoringModelSelector:
                             for mcv in model_criteria_values:
                                 print("%.2f" %(mcv), end=' ', file=outf)
                             print(file=outf)
-        
+
                     rsf.close()
 
         self._extract_models_from_trajectories(output_dir, num_runs,
                                                total_num_frames)
-        
+
         self.split_good_scoring_models_into_two_subsets(split_type="divide_by_run_ids")
 
-       
+
     def split_good_scoring_models_into_two_subsets(self,split_type="divide_by_run_ids"):
         ''' Get the listof good scoring models and split them into two samples. Write the model id and sample id onto a file. 
         @param split_type how to split good scoring models into two samples. Current options are:
@@ -172,9 +172,9 @@ class GoodScoringModelSelector:
         '''
         sample1_indices=[]
         sample2_indices=[]
-        
+
         if split_type=="divide_by_run_ids": # split into odd and even runs
-            
+
             for i,gsm in enumerate(self.all_good_scoring_models):
                 if int(gsm[0])%2!=0:   # assume runs start from 1
                     sample1_indices.append(i)
