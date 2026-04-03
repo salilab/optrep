@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# Set up an environment to run tests under Travis CI (see ../.travis.yml)
+# Set up an environment to run CI tests, e.g. with GitHub Actions or Travis
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 python_version"

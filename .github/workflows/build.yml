@@ -24,7 +24,7 @@ jobs:
         submodules: true
     - name: Setup conda and dependencies
       run: |
-        tools/setup_travis.sh ${{ matrix.python-version }}
+        tools/setup_ci.sh ${{ matrix.python-version }}
     - name: Test
       run: |
         export IMP_TMP_DIR=/tmp
